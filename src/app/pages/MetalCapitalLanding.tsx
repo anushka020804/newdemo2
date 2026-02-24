@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { Building2, ArrowRight, CheckCircle2, ShieldCheck, Users, Sparkles } from "lucide-react";
 
 export default function MetalCapitalLanding() {
+  const navigate = useNavigate();
   const [showPopup, setShowPopup] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({ name: "", number: "" });
@@ -30,6 +32,25 @@ export default function MetalCapitalLanding() {
 
   return (
     <div id="top" className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
+      {/* Toggle Button for OpportunityX / MetalCapital */}
+      <div className="w-full flex justify-center bg-slate-50" style={{ paddingTop: 96, paddingBottom: 8 }}>
+        <div className="flex rounded-full overflow-hidden border border-blue-200 shadow-md" style={{ minWidth: 320 }}>
+          <button
+            onClick={() => navigate("/")}
+            className={`px-8 py-3 text-lg font-semibold transition-all focus:outline-none border-r border-blue-200 ${window.location.pathname === "/" ? "bg-blue-600 text-white" : window.location.pathname.startsWith("/metalcapital") ? "bg-white text-blue-700" : "bg-white text-blue-700 hover:bg-blue-50"}`}
+            aria-pressed={window.location.pathname === "/"}
+          >
+            OpportunityX
+          </button>
+          <button
+            onClick={() => navigate("/metalcapital")}
+            className={`px-8 py-3 text-lg font-semibold transition-all focus:outline-none border-l border-blue-200 ${window.location.pathname.startsWith("/metalcapital") ? "bg-blue-600 text-white" : "bg-white text-blue-700 hover:bg-blue-50"}`}
+            aria-pressed={window.location.pathname.startsWith("/metalcapital")}
+          >
+            MetalCapital
+          </button>
+        </div>
+      </div>
       {/* Navbar (copied from main landing) */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
@@ -39,17 +60,28 @@ export default function MetalCapitalLanding() {
           <div className="hidden md:flex items-center gap-8">
             <a href="#hero" onClick={(e) => { e.preventDefault(); scrollToStart('hero'); }} className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Home</a>
             <a href="#about" onClick={(e) => { e.preventDefault(); scrollToCenter('about'); }} className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">About</a>
-            <a href="#solutions" onClick={(e) => { e.preventDefault(); scrollToCenter('solutions'); }} className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Solution</a>
             <div className="relative group">
               <button aria-haspopup="true" className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors flex items-center gap-1 focus:outline-none">
                 Products
                 <svg className="w-4 h-4 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
               </button>
               <div className="absolute left-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-events-none group-hover:pointer-events-auto group-focus-within:pointer-events-auto transition-opacity z-50">
-                <a href="/" className="block px-5 py-3 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg">OpportunityX</a>
+                <a
+                  href="/"
+                  className={`block px-5 py-3 text-sm rounded-lg font-semibold transition-colors ${window.location.pathname === "/" ? "bg-blue-700 text-white" : "text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}`}
+                  aria-current={window.location.pathname === "/" ? "page" : undefined}
+                >
+                  OpportunityX
+                </a>
+                <a
+                  href="/metalcapital"
+                  className={`block px-5 py-3 text-sm rounded-lg font-semibold transition-colors ${window.location.pathname.startsWith("/metalcapital") ? "bg-blue-700 text-white" : "text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}`}
+                  aria-current={window.location.pathname.startsWith("/metalcapital") ? "page" : undefined}
+                >
+                  MetalCapital
+                </a>
               </div>
             </div>
-            <a href="#features" onClick={(e) => { e.preventDefault(); scrollToCenter('entrypoints'); }} className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Features</a>
           </div>
           <div className="flex items-center gap-4">
             <a href="/login" className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors hidden sm:block">Log in</a>
@@ -59,7 +91,7 @@ export default function MetalCapitalLanding() {
       </nav>
 
       {/* Hero Section with Abstract Background and Side-by-Side Layout */}
-      <section id="hero" className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+      <section id="hero" className="relative pt-8 pb-20 lg:pt-16 lg:pb-32 overflow-hidden">
         {/* Abstract Background Elements */}
         <div className="absolute top-0 inset-x-0 h-full overflow-hidden -z-10 bg-white">
           <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-blue-50 blur-3xl opacity-60 mix-blend-multiply animate-blob" />
@@ -155,25 +187,7 @@ export default function MetalCapitalLanding() {
 
 
       {/* Empowered by Global Standards Section (with 3 logos) */}
-      <section className="py-14 bg-white">
-        <div className="max-w-5xl mx-auto px-6 text-center">
-          <p className="text-base font-semibold text-slate-400 mb-10 tracking-widest uppercase">Empowered by Global Standards</p>
-          <div className="flex flex-col md:flex-row items-center justify-center gap-y-8 md:gap-x-12">
-            <div className="flex-1 flex flex-col items-center">
-              <img src="/partners/kotak.png" alt="Kotak" className="h-14 mb-2 transition duration-300 object-contain" />
-              <span className="text-xs text-slate-400 tracking-widest mt-1">STRATEGIC LENDER</span>
-            </div>
-            <div className="flex-1 flex flex-col items-center">
-              <img src="/partners/efl.png" alt="EFL" className="h-14 mb-2 transition duration-300 object-contain" />
-              <span className="text-xs text-slate-400 tracking-widest mt-1">ECOSYSTEM PARTNER</span>
-            </div>
-            <div className="flex-1 flex flex-col items-center">
-              <img src="/partners/iima.png" alt="IIMA Ventures" className="h-14 mb-2 transition duration-300 object-contain" />
-              <span className="text-xs text-slate-400 tracking-widest mt-1">INCUBATED AT</span>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Empowered by Global Standards section removed as requested */}
 
       {/* Start Now Popup */}
       {showPopup && (
@@ -227,65 +241,7 @@ export default function MetalCapitalLanding() {
       </section>
 
 
-      {/* Inserted MetalCapital details and three info boxes */}
-      <section id="solutions" className="py-12 bg-slate-50">
-        <div className="max-w-5xl mx-auto px-6">
-          <div>
-            <h3 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3 text-center">QistonPe MetalCapital</h3>
-            <p className="text-slate-700 mb-8 max-w-2xl mx-auto text-center">Bridge ancillary manufacturers' working-capital gaps through unsecured, order-backed financing routed directly to suppliers.</p>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="p-10 bg-gradient-to-br from-blue-700 to-indigo-800 rounded-3xl shadow-xl hover:shadow-2xl transition-transform transform hover:-translate-y-1 border border-indigo-900/20">
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="w-14 h-14 rounded-lg bg-indigo-900/20 text-white flex items-center justify-center">
-                    <CheckCircle2 className="w-7 h-7 text-white" />
-                  </div>
-                  <h4 className="font-semibold text-lg text-white">Key Features</h4>
-                </div>
-                <ul className="text-sm space-y-2 text-white/90">
-                  <li>Purchase Order & Bill-of-Materials linked disbursement</li>
-                  <li>Underwriting using GST data, e-invoice and e-way bill</li>
-                  <li>Direct payments to suppliers</li>
-                  <li>No collateral; loans from ₹5 Lakhs to ₹3 Cr</li>
-                  <li>Tenure matched to project and OEM payment cycles</li>
-                </ul>
-              </div>
-
-              <div className="p-10 bg-gradient-to-br from-blue-700 to-indigo-800 rounded-3xl shadow-xl hover:shadow-2xl transition-transform transform hover:-translate-y-1 border border-indigo-900/20">
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="w-14 h-14 rounded-lg bg-indigo-900/20 text-white flex items-center justify-center">
-                    <ShieldCheck className="w-7 h-7 text-white" />
-                  </div>
-                  <h4 className="font-semibold text-lg text-white">De-Risking for FIs</h4>
-                </div>
-                <ul className="text-sm space-y-2 text-white/90">
-                  <li>Automated PO / BoM / e-invoice validation</li>
-                  <li>E-way bill checks for supply and receipt</li>
-                  <li>OEM / anchor mapping for counterparty strength</li>
-                  <li>Escrow-based repayment controls</li>
-                  <li>Cluster-level monitoring and early warning signals</li>
-                </ul>
-              </div>
-
-              <div className="p-10 bg-gradient-to-br from-blue-700 to-indigo-800 rounded-3xl shadow-xl hover:shadow-2xl transition-transform transform hover:-translate-y-1 border border-indigo-900/20">
-                <div className="flex items-center gap-4 mb-3">
-                  <div className="w-14 h-14 rounded-lg bg-indigo-900/20 text-white flex items-center justify-center">
-                    <Users className="w-7 h-7 text-white" />
-                  </div>
-                  <h4 className="font-semibold text-lg text-white">Customer Profile</h4>
-                </div>
-                <ul className="text-sm space-y-2 text-white/90">
-                  <li>At least 3 years of operating history</li>
-                  <li>Registered business: Sole prop / Partnership / Pvt. Ltd.</li>
-                  <li>Located near large OEM clusters</li>
-                  <li>Manufacturing MSMEs (turnover up to ₹50 Cr)</li>
-                  <li>Supplying Heavy Engineering, Power, Railways, or Defense</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      // ...existing code...
 
       {/* OpportunityX & MetalCapital Entry Points - Redesigned */}
       <section id="entrypoints" className="py-20 bg-slate-50">
@@ -331,72 +287,7 @@ export default function MetalCapitalLanding() {
         </div>
       </section>
 
-      {/* Traceable Supply Chain - Digital Workflow */}
-      <section id="features" className="py-16 bg-white">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl md:text-3xl font-bold text-slate-900">Traceable Supply Chain Digital Workflow</h3>
-            <p className="text-slate-600 max-w-2xl mx-auto mt-3">QistonPe’s digital workflow validates each purchase order, bill of material, and supplier transaction—creating a closed-loop flow from order to repayment.</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-            <div className="rounded-2xl p-6 bg-blue-50 text-slate-800 shadow-sm">
-              <div className="flex flex-col items-center text-center gap-3">
-                <div className="w-16 h-16 rounded-lg bg-indigo-600/10 flex items-center justify-center">
-                  <Users className="w-8 h-8 text-indigo-700" />
-                </div>
-                <div className="text-sm font-semibold text-indigo-700">01</div>
-                <h4 className="font-semibold text-base text-slate-900">Phygital Onboarding</h4>
-                <p className="text-sm text-slate-600 max-w-xs">KYC & credit validation using verified PO, GST, and historical financial data.</p>
-              </div>
-            </div>
-
-            <div className="rounded-2xl p-6 bg-blue-50 text-slate-800 shadow-sm">
-              <div className="flex flex-col items-center text-center gap-3">
-                <div className="w-16 h-16 rounded-lg bg-indigo-600/10 flex items-center justify-center">
-                  <Sparkles className="w-8 h-8 text-indigo-700" />
-                </div>
-                <div className="text-sm font-semibold text-indigo-700">02</div>
-                <h4 className="font-semibold text-base text-slate-900">AI-Driven BoM</h4>
-                <p className="text-sm text-slate-600 max-w-xs">Matching procurement needs with supplier quotes and purchase order requirements.</p>
-              </div>
-            </div>
-
-            <div className="rounded-2xl p-6 bg-blue-50 text-slate-800 shadow-sm">
-              <div className="flex flex-col items-center text-center gap-3">
-                <div className="w-16 h-16 rounded-lg bg-indigo-600/10 flex items-center justify-center">
-                  <CheckCircle2 className="w-8 h-8 text-indigo-700" />
-                </div>
-                <div className="text-sm font-semibold text-indigo-700">03</div>
-                <h4 className="font-semibold text-base text-slate-900">Transaction Underwriting</h4>
-                <p className="text-sm text-slate-600 max-w-xs">Digital PO verification, Gen-AI BoM matching, and e-way / invoice checks.</p>
-              </div>
-            </div>
-
-            <div className="rounded-2xl p-6 bg-blue-50 text-slate-800 shadow-sm">
-              <div className="flex flex-col items-center text-center gap-3">
-                <div className="w-16 h-16 rounded-lg bg-indigo-600/10 flex items-center justify-center">
-                  <Building2 className="w-8 h-8 text-indigo-700" />
-                </div>
-                <div className="text-sm font-semibold text-indigo-700">04</div>
-                <h4 className="font-semibold text-base text-slate-900">Disbursement</h4>
-                <p className="text-sm text-slate-600 max-w-xs">Direct payment to suppliers. Zero diversion risk. Aligned with the business cycle and project.</p>
-              </div>
-            </div>
-
-            <div className="rounded-2xl p-6 bg-blue-50 text-slate-800 shadow-sm">
-              <div className="flex flex-col items-center text-center gap-3">
-                <div className="w-16 h-16 rounded-lg bg-indigo-600/10 flex items-center justify-center">
-                  <ShieldCheck className="w-8 h-8 text-indigo-700" />
-                </div>
-                <div className="text-sm font-semibold text-indigo-700">05</div>
-                <h4 className="font-semibold text-base text-slate-900">Repayment</h4>
-                <p className="text-sm text-slate-600 max-w-xs">Traceable repayments, captured from OEM project proceeds.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      // ...existing code...
       {/* Footer */}
       <footer className="bg-slate-50 text-slate-700 py-12 border-t border-slate-200">
         <div className="max-w-7xl mx-auto px-6">

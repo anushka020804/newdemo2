@@ -12,13 +12,36 @@ export function MarketingLandingPage() {
   const scrollToCenter = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      const navHeight = 80; // matches navbar height (h-20)
+      const rect = el.getBoundingClientRect();
+      const scrollTop = window.scrollY || window.pageYOffset;
+      const top = rect.top + scrollTop - navHeight - 12; // 12px extra spacing
+      window.scrollTo({ top, behavior: "smooth" });
       try { history.replaceState(null, "", `#${id}`); } catch (e) { /* ignore */ }
     }
   };
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-indigo-100 selection:text-indigo-900">
+      {/* Toggle Button for OpportunityX / MetalCapital */}
+      <div className="w-full flex justify-center bg-slate-50" style={{ paddingTop: 96, paddingBottom: 8 }}>
+        <div className="flex rounded-full overflow-hidden border border-blue-300 shadow-lg min-w-[320px]">
+          <button
+            onClick={() => navigate("/")}
+            className={`px-8 py-3 text-lg font-semibold transition-all focus:outline-none border-r border-blue-300 ${window.location.pathname === "/" ? "bg-blue-600 text-white" : window.location.pathname.startsWith("/metalcapital") ? "bg-white text-blue-700" : "bg-white text-blue-700 hover:bg-blue-50"}`}
+            aria-pressed={window.location.pathname === "/"}
+          >
+            OpportunityX
+          </button>
+          <button
+            onClick={() => navigate("/metalcapital")}
+            className={`px-8 py-3 text-lg font-semibold transition-all focus:outline-none border-l border-blue-300 ${window.location.pathname.startsWith("/metalcapital") ? "bg-blue-600 text-white" : "bg-white text-blue-700 hover:bg-blue-50"}`}
+            aria-pressed={window.location.pathname.startsWith("/metalcapital")}
+          >
+            MetalCapital
+          </button>
+        </div>
+      </div>
 
       {/* Navigation Bar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-200/50">
@@ -28,18 +51,32 @@ export function MarketingLandingPage() {
           </div>
           <div className="hidden md:flex items-center gap-8">
             <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); try { history.replaceState(null, '', '#') } catch (e) {} }} className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Home</a>
-            <a href="#about" onClick={(e) => { e.preventDefault(); scrollToCenter('about') }} className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">About</a>
-            <a href="#problem-solution" onClick={(e) => { e.preventDefault(); scrollToCenter('problem-solution') }} className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Solution</a>
+            <a href="/about" onClick={(e) => { e.preventDefault(); navigate('/about'); }} className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">About</a>
+            {/* Solution link permanently removed from all routes as requested */}
             <div className="relative group">
               <button className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors flex items-center gap-1 focus:outline-none">
                 Products
                 <svg className="w-4 h-4 mt-0.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
               </button>
-              <div className="absolute left-0 mt-2 w-48 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-events-none group-hover:pointer-events-auto group-focus-within:pointer-events-auto transition-opacity z-50">
-                <a href="/metalcapital" className="block px-5 py-3 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg">Metal Capital</a>
+              <div className="absolute left-0 mt-2 w-56 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 pointer-events-none group-hover:pointer-events-auto group-focus-within:pointer-events-auto transition-opacity z-50">
+                <a
+                  href="/"
+                  onClick={e => { e.preventDefault(); navigate("/"); }}
+                  className={`block px-5 py-3 text-sm rounded-lg font-semibold transition-colors ${window.location.pathname === "/" ? "bg-blue-700 text-white" : "text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}`}
+                  aria-current={window.location.pathname === "/" ? "page" : undefined}
+                >
+                  OpportunityX
+                </a>
+                <a
+                  href="/metalcapital"
+                  onClick={e => { e.preventDefault(); navigate("/metalcapital"); }}
+                  className={`block px-5 py-3 text-sm rounded-lg font-semibold transition-colors ${window.location.pathname.startsWith("/metalcapital") ? "bg-blue-700 text-white" : "text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}`}
+                  aria-current={window.location.pathname.startsWith("/metalcapital") ? "page" : undefined}
+                >
+                  MetalCapital
+                </a>
               </div>
             </div>
-            <a href="#features" onClick={(e) => { e.preventDefault(); scrollToCenter('features') }} className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors">Features</a>
           </div>
           <div className="flex items-center gap-4">
             <button onClick={() => navigate("/login")} className="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors hidden sm:block">
@@ -56,7 +93,7 @@ export function MarketingLandingPage() {
       </nav>
 
       {/* Hero Section (updated) */}
-      <section className="relative pt-28 pb-16 lg:pt-40 lg:pb-28 overflow-hidden">
+      <section className="relative pt-6 pb-16 lg:pt-16 lg:pb-28 overflow-hidden animate-fadein">
         {/* Soft background shapes */}
         <div className="absolute inset-0 -z-10 bg-white">
           <div className="absolute -left-32 -top-20 w-96 h-96 bg-indigo-50 rounded-full blur-3xl opacity-60" />
@@ -76,72 +113,88 @@ export function MarketingLandingPage() {
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 mb-6 leading-tight">
-                Turning Small Factories
-                <span className="block text-indigo-600">into Big Stories</span>
+                AI Tender Automation Software for <span className="text-blue-700">MSME Manufacturers</span> Supplying to PSU OEMs in India
               </h1>
 
               <p className="text-lg text-slate-600 mb-8 max-w-2xl">
-                OpportunityX finds tenders by matching your HSN codes and product keywords, and helps with bid documentation and tender analysis.
+                Discover relevant PSU tenders, check eligibility instantly, and generate bid-ready compliant documentation in minutes — using AI built specifically for Indian MSMEs.
               </p>
 
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                <button onClick={() => navigate('/signup')} aria-label="Start for free" className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl font-semibold shadow-lg hover:scale-[1.02] transition-transform">
-                  Start for Free
+                <button onClick={() => navigate('/signup')} aria-label="Start Free for 6 Months" className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl font-semibold shadow-lg hover:scale-[1.02] transition-transform">
+                  Start Free for 6 Months
                   <ArrowRight className="w-4 h-4" />
                 </button>
 
-                <button onClick={() => scrollToCenter('features')} aria-label="See how it works" className="inline-flex items-center gap-2 px-5 py-3 border border-slate-200 rounded-xl bg-white text-slate-700 shadow-sm hover:shadow-md">
-                  See How It Works
+                <button
+                  onClick={() => scrollToCenter('how-it-works')}
+                  aria-label="How it works?"
+                  className="inline-flex items-center gap-2 px-5 py-3 border border-slate-200 rounded-xl bg-white text-slate-700 shadow-sm hover:shadow-md"
+                >
+                  How it works?
                 </button>
               </div>
 
-              <div className="mt-8 flex items-center gap-6">
-                <div className="flex items-center gap-3">
-                  <CheckCircle2 className="w-6 h-6 text-indigo-500" />
-                  <div>
-                    <div className="text-sm font-semibold">Curated Matches</div>
-                    <div className="text-xs text-slate-500">Only relevant tenders, delivered daily</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <ShieldCheck className="w-6 h-6 text-green-400" />
-                  <div>
-                    <div className="text-sm font-semibold">Bank-grade Security</div>
-                    <div className="text-xs text-slate-500">Secure data and compliant integrations</div>
-                  </div>
+              <div className="mt-8">
+                <div className="inline-flex items-center gap-3 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-full text-sm font-semibold">
+                  Built for Indian MSMEs | Governed by Indian Data & Privacy Laws
                 </div>
               </div>
             </div>
 
             {/* Right: Visual/Stats card */}
             <div className="relative">
-              <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-6 shadow-2xl border border-slate-100">
-                <div className="flex items-center justify-center mb-4">
-                      <div className="text-base text-indigo-600">Product Preview</div>
+              <div className="bg-blue-700 rounded-2xl p-6 shadow-2xl border border-blue-700">
+                <div className="flex flex-col items-center justify-center py-8 px-4">
+                  <div className="mb-6 text-3xl font-extrabold text-white tracking-tight drop-shadow-lg text-center">Key Benefits</div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl">
+                    <div className="flex flex-col items-center bg-white rounded-2xl shadow-lg p-6 border border-blue-200 hover:shadow-xl transition-shadow">
+                      <span className="flex-shrink-0 relative mb-3">
+                        <span className="absolute inset-0 w-12 h-12 bg-blue-100 rounded-full -z-10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"></span>
+                        <span className="bg-white p-3 rounded-full inline-flex items-center justify-center relative z-10">
+                          <CheckCircle2 className="w-7 h-7 text-blue-900" />
+                        </span>
+                      </span>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-blue-900 mb-1">Curated tenders across 90+ PSU OEMs</div>
+                        <div className="text-xs text-blue-800">Automatically scanned and curated</div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center bg-white rounded-2xl shadow-lg p-6 border border-blue-200 hover:shadow-xl transition-shadow">
+                      <span className="flex-shrink-0 relative mb-3">
+                        <span className="absolute inset-0 w-12 h-12 bg-blue-100 rounded-full -z-10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"></span>
+                        <span className="bg-white p-3 rounded-full inline-flex items-center justify-center relative z-10">
+                          <CheckCircle2 className="w-7 h-7 text-blue-900" />
+                        </span>
+                      </span>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-blue-900 mb-1">AI eligibility & risk checks in minutes</div>
+                        <div className="text-xs text-blue-800">Instant technical & compliance analysis</div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-center bg-white rounded-2xl shadow-lg p-6 border border-blue-200 hover:shadow-xl transition-shadow">
+                      <span className="flex-shrink-0 relative mb-3">
+                        <span className="absolute inset-0 w-12 h-12 bg-blue-100 rounded-full -z-10 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"></span>
+                        <span className="bg-white p-3 rounded-full inline-flex items-center justify-center relative z-10">
+                          <CheckCircle2 className="w-7 h-7 text-blue-900" />
+                        </span>
+                      </span>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-blue-900 leading-tight mb-1">
+                          Automated<br />Bid documentation
+                        </div>
+                        <div className="text-xs text-blue-800">Save up to 95% preparation time</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="h-56 md:h-64 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg flex items-center justify-center text-indigo-600 overflow-hidden">
-                  <video
-                    className="w-full h-full object-cover"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    poster="/assets/logo.jpg"
-                  >
-                    <source src="/assets/vid.mp4" type="video/mp4" />
-                    {/* Fallback to image if video not supported */}
-                    <img src="/assets/logo.jpg" alt="Platform dashboard preview" className="w-full h-full object-cover" />
-                  </video>
-                </div>
-
-                <div className="mt-4 text-sm text-slate-600">Connect your profile, set keywords, and get matched automatically — no manual search required.</div>
+                {/* Removed extra text as per request */}
               </div>
 
               {/* Help strip under the card */}
               <div className="mt-4 flex items-center gap-4 bg-white border border-slate-100 rounded-lg p-3 shadow-sm">
-                <div className="flex-1 text-sm text-slate-700">
+                <div className="flex-1 text-sm text-slate-700 h-full flex flex-col justify-center">
                   Need help signing up? Call us or chat on WhatsApp — we're here to help.
                 </div>
                 <div className="flex items-center gap-2">
@@ -160,169 +213,206 @@ export function MarketingLandingPage() {
         </div>
       </section>
 
-      {/* Social Proof Scroller */}
-      <section className="py-14 bg-white">
-        <div className="max-w-5xl mx-auto px-6 text-center">
-          <p className="text-base font-semibold text-slate-400 mb-10 tracking-widest uppercase">Empowered by Global Standards</p>
-          <div className="grid grid-cols-1 md:grid-cols-3 items-center justify-items-center gap-12 md:gap-24">
-            <div className="flex flex-col items-center w-full max-w-[240px]">
-              <img src="/partners/kotak.png" alt="Kotak" className="h-16 mb-3 object-contain transition duration-300" />
-              <span className="text-xs text-slate-400 tracking-widest mt-1">STRATEGIC LENDER</span>
-            </div>
-            <div className="flex flex-col items-center w-full max-w-[240px]">
-              <img src="/partners/efl.png" alt="EFL" className="h-16 mb-3 object-contain transition duration-300" />
-              <span className="text-xs text-slate-400 tracking-widest mt-1">ECOSYSTEM PARTNER</span>
-            </div>
-            <div className="flex flex-col items-center w-full max-w-[240px]">
-              <img src="/partners/iima.png" alt="IIMA Ventures" className="h-16 mb-3 object-contain transition duration-300" />
-              <span className="text-xs text-slate-400 tracking-widest mt-1">INCUBATED AT</span>
-            </div>
-          </div>
-          
-        </div>
-      </section>
 
-      {/* Features Grid */}
-      <section id="features" className="py-24 bg-white">
+      {/* Problem Section: text on right, image placeholder on left */}
+      <section id="problem-manual" className="py-20 bg-blue-50 animate-fadein">
         <div className="max-w-7xl mx-auto px-6">
-            <div className="bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl p-8 shadow-md border border-blue-100">
-              <div className="text-center mb-16">
-                <h2 className="text-3xl lg:text-4xl font-bold text-indigo-900 mb-4">Everything you need to scale</h2>
-                <p className="text-indigo-800 max-w-2xl mx-auto text-lg">
-                  Streamline your business operations with our integrated suite of tools designed for modern enterprises.
-                </p>
+          <div className="grid lg:grid-cols-2 gap-14 items-center">
+            {/* Left: Image with accent bar */}
+            <div className="order-1">
+              <div className="relative overflow-hidden rounded-3xl shadow-xl border border-blue-100 bg-white">
+                <div className="absolute left-0 top-0 h-full w-2 bg-gradient-to-b from-blue-600 to-indigo-400 rounded-l-3xl" />
+                <img src="/assets/problem-collage.png" alt="MSME tender paperwork collage" className="w-full h-64 object-cover block rounded-3xl" loading="lazy" />
               </div>
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8 justify-items-center">
-            {/* Feature 1 */}
-            <motion.div whileHover={{ y: -5 }} className="w-full max-w-md p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:border-indigo-100 hover:shadow-xl transition-all duration-300">
-              <div className="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center text-indigo-600 mb-6">
-                <Sparkles className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">OpportunityX</h3>
-              <p className="text-slate-600 leading-relaxed mb-6">AI-driven tender discovery that surfaces the best matches for your capabilities.</p>
-              <a href="#" className="text-indigo-600 font-medium hover:text-indigo-700 flex items-center gap-1">Learn more <ArrowRight className="w-4 h-4" /></a>
-            </motion.div>
-
-            <motion.div whileHover={{ y: -5 }} className="w-full max-w-md p-8 rounded-3xl bg-slate-50 border border-slate-100 hover:border-amber-100 hover:shadow-xl transition-all duration-300 cursor-pointer" onClick={() => setShowPopup(true)}>
-              <div className="w-14 h-14 bg-amber-100 rounded-2xl flex items-center justify-center text-amber-600 mb-6">
-                <Building2 className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Metal Capital</h3>
-              <p className="text-slate-600 leading-relaxed mb-6">Fast supply-chain financing tailored for manufacturers and large projects.</p>
-              <span className="text-amber-600 font-medium hover:text-amber-700 flex items-center gap-1">Request callback <ArrowRight className="w-4 h-4" /></span>
-            </motion.div>
-
-            {/* Partner Network removed as requested */}
-
-
-                {/* Metal Capital Popup */}
-                {showPopup && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-                    <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm relative">
-                      <button className="absolute top-3 right-3 text-slate-400 hover:text-slate-700 text-xl" onClick={() => { setShowPopup(false); setSubmitted(false); setForm({ name: '', number: '' }); }}>&times;</button>
-                      {!submitted ? (
-                        <form onSubmit={e => { e.preventDefault(); setSubmitted(true); }}>
-                          <h3 className="text-xl font-bold mb-4 text-slate-900">Request a Callback</h3>
-                          <div className="mb-4">
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Name</label>
-                            <input type="text" required className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-                          </div>
-                          <div className="mb-6">
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Phone Number</label>
-                            <input type="tel" required pattern="[0-9]{10,}" className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400" value={form.number} onChange={e => setForm(f => ({ ...f, number: e.target.value }))} />
-                          </div>
-                          <button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-2.5 rounded-lg transition-all">Submit</button>
-                        </form>
-                      ) : (
-                        <div className="text-center py-8">
-                          <h3 className="text-xl font-bold mb-2 text-amber-600">Thank you!</h3>
-                          <p className="text-slate-700 mb-2">Our team will reach out to you soon.</p>
-                          <button className="mt-4 px-6 py-2 bg-slate-200 rounded-lg text-slate-700 font-medium hover:bg-slate-300" onClick={() => { setShowPopup(false); setSubmitted(false); setForm({ name: '', number: '' }); }}>Close</button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
             </div>
-          </div>
-        </div>
-      </section>
 
-      {/* About Section */}
-      <section id="about" className="py-24 bg-white text-slate-900">
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
-          <div>
-            <h2 className="text-3xl lg:text-4xl font-bold mb-6">About QistonPe</h2>
-            <p className="text-lg text-slate-700 mb-6 leading-relaxed">
-              An AI-powered enablement platform for small manufacturers — helping them boost productivity, cut costs, and win new business.
-            </p>
-            <p className="text-slate-600 mb-6 leading-relaxed">
-              We empower small manufacturers to win and fulfill new business through curated bid discovery and order-backed raw-material financing. From instant Bill of Materials (BoM) generation and smart procurement to integrated financing and supplier orchestration, we streamline operations so manufacturers can focus on production and growth.
-            </p>
-            <p className="text-slate-600 mb-6 leading-relaxed">
-              Our tools combine automated tender-matching, easy bid documentation, and working-capital solutions to reduce time-to-win and speed up fulfillment — helping manufacturers scale efficiently.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <span className="inline-flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm">Curated Bid Discovery</span>
-              <span className="inline-flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm">Instant BoM & Procurement</span>
-              <span className="inline-flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm">Order-backed Financing</span>
-            </div>
-          </div>
-
-          <div>
-            <div className="rounded-2xl p-8 shadow-lg border border-slate-100 bg-gradient-to-br from-indigo-600 to-blue-500 text-white">
-              <h3 className="text-xl font-semibold mb-4">How QistonPe helps</h3>
-              <ul className="space-y-4 text-white/90">
-                <li>
-                  <strong className="text-white">Find relevant tenders:</strong> <span className="text-white/90">Automated HSN & keyword matching surfaces the best-fit opportunities.</span>
-                </li>
-                <li>
-                  <strong className="text-white">Create winning bids:</strong> <span className="text-white/90">Generate professional bid documents and BoMs quickly with AI-assisted templates.</span>
-                </li>
-                <li>
-                  <strong className="text-white">Finance production:</strong> <span className="text-white/90">Access order-backed financing to buy raw materials and scale fulfillment.</span>
-                </li>
-                <li>
-                  <strong className="text-white">Streamline procurement:</strong> <span className="text-white/90">Smart sourcing suggestions and supplier coordination to cut costs and lead times.</span>
-                </li>
-              </ul>
-              <div className="mt-6 text-sm text-white/80">Trusted by growing manufacturers to reduce friction from opportunity to delivery.</div>
-            </div>
-          </div>
-        </div>
-      </section>
-      {/* Problem / Solution Section (restyled, navy tones) */}
-      <section id="problem-solution" className="py-20 bg-blue-50">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
-            <div>
-              <div className="bg-white rounded-2xl p-8 shadow-sm border-l-4 border-blue-800 h-full">
-                <h3 className="text-2xl font-bold mb-4 text-slate-900">The Problem</h3>
-                <p className="text-slate-600 mb-4 leading-relaxed">
-                  Small manufacturers struggle to discover relevant tenders, create professional bid documents quickly, and secure the working capital needed to fulfill orders. Manual BoM creation, fragmented supplier sourcing, and slow procurement increase time-to-win and reduce margins.
-                </p>
-                <ul className="list-disc pl-5 text-slate-600 space-y-2">
-                  <li>Finding relevant tenders is time-consuming and noisy.</li>
-                  <li>Preparing bids and BoMs is manual and error-prone.</li>
-                  <li>Lack of order-backed financing delays production.</li>
+            {/* Right: Problem text in card */}
+            <div className="order-2">
+              <div className="rounded-3xl shadow-xl border border-blue-100 bg-white/95 px-8 py-10 relative">
+                <h3 className="text-2xl md:text-3xl font-extrabold mb-5 text-blue-900 leading-snug">You’re Not Losing Tenders to Competitors — You’re Losing Them to Your Process.</h3>
+                <p className="text-blue-800 mb-5 text-base md:text-lg">Most MSME manufacturers supplying to PSU OEMs face the same challenges:</p>
+                <ul className="space-y-3 mb-6">
+                  <li className="flex items-start gap-3">
+                    <span className="mt-1 w-3 h-3 rounded-full bg-blue-500 flex-shrink-0 shadow-sm"></span>
+                    <span className="text-blue-900">Monitoring multiple tender portals manually</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="mt-1 w-3 h-3 rounded-full bg-blue-500 flex-shrink-0 shadow-sm"></span>
+                    <span className="text-blue-900">Missing relevant bids due to manual tracking</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="mt-1 w-3 h-3 rounded-full bg-blue-500 flex-shrink-0 shadow-sm"></span>
+                    <span className="text-blue-900">Spending days preparing compliance heavy bid documents</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="mt-1 w-3 h-3 rounded-full bg-blue-500 flex-shrink-0 shadow-sm"></span>
+                    <span className="text-blue-900">Facing technical rejections in PSU tenders due to minor errors</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="mt-1 w-3 h-3 rounded-full bg-blue-500 flex-shrink-0 shadow-sm"></span>
+                    <span className="text-blue-900">Limited manpower to scale bidding efforts</span>
+                  </li>
                 </ul>
+
+                <p className="text-blue-800 mb-2 text-base md:text-lg"><strong className="text-blue-900">The opportunity exists.</strong> But manual processes are slowing growth.</p>
+                <p className="text-blue-800 text-base md:text-lg">Without a structured PSU tender management system, scaling becomes impossible.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Agitate Section: emphasize revenue loss and automation benefits */}
+      <section id="agitate" className="py-20 bg-slate-50 animate-fadein">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="bg-white rounded-3xl p-10 shadow-md grid lg:grid-cols-2 gap-10 items-center">
+            <div className="flex items-start">
+              <div className="w-full">
+                <h3 className="text-2xl font-bold text-red-700 mb-4">Every Missed Tender Is Lost Revenue.</h3>
+
+                <p className="text-slate-700 mb-4">When tender discovery and bidding remain manual:</p>
+                <ul className="list-disc pl-5 text-slate-600 space-y-2 mb-4">
+                  <li>Competitors apply to more tenders using automation</li>
+                  <li>Technical disqualifications waste weeks of effort</li>
+                  <li>Compliance gaps go unnoticed until submission</li>
+                  <li>Your team spends more time preparing bids than producing goods</li>
+                </ul>
+
+                <p className="text-slate-700 mb-2"><strong>In the PSU ecosystem, precision and speed determine who wins contracts.</strong></p>
+                <p className="text-slate-700"><strong>Manual bidding does not scale for MSMEs. Automation does.</strong></p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-center">
+              <div className="h-56 w-full bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl flex items-center justify-center text-indigo-400">
+                 <img src="/assets/agitate-collage.png" alt="Agitate collage" className="w-full h-56 object-cover rounded-2xl block" loading="lazy" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* Problem / Solution Section (restyled, navy tones) */}
+      <section id="problem-solution" className="py-24 bg-blue-50 animate-fadein">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="mb-10 text-center">
+            <h2 className="text-3xl md:text-4xl font-extrabold text-blue-900 tracking-tight">Our Solution</h2>
+          </div>
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            <div className="relative">
+              <div className="bg-gradient-to-br from-white to-slate-50 rounded-2xl p-6 shadow-2xl border border-slate-100 h-full flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-center mb-4">
+                        {/* Removed Product Preview as per request */}
+                  </div>
+
+                  <div className="h-80 md:h-[28rem] bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg flex items-center justify-center text-indigo-600 overflow-hidden">
+                    <video
+                      className="w-full h-full object-contain"
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      poster="/assets/logo.jpg"
+                    >
+                      <source src="/assets/vid.mp4" type="video/mp4" />
+                      {/* Fallback to image if video not supported */}
+                      <img src="/assets/logo.jpg" alt="Platform dashboard preview" className="w-full h-full object-contain" />
+                    </video>
+                  </div>
+
+                  {/* Growth Multiplier Card */}
+                  <div className="mt-6 rounded-2xl bg-white/90 border border-blue-100 shadow p-6">
+                    <h3 className="text-xl font-bold text-blue-800 mb-3">Apply to More. Win More.</h3>
+                    <div className="text-blue-900 font-semibold mb-2">With automation:</div>
+                    <ul className="list-disc pl-5 text-blue-900 space-y-1 mb-3">
+                      <li>Apply to 3–5x more tenders</li>
+                      <li>Reduce technical rejections</li>
+                      <li>Improve compliance accuracy</li>
+                      <li>Free your team for production & operations</li>
+                      <li>Compete with larger players confidently</li>
+                    </ul>
+                    <div className="font-medium text-blue-700 mb-1">This is just not software</div>
+                    <div className="text-blue-800 font-bold">It’s a growth multiplier for <span className="text-blue-600">MSME Manufacturers</span>.</div>
+                  </div>
+                </div>
+
+                {/* Help strip under the card */}
+                <div className="mt-4 flex items-center gap-4 bg-white border border-slate-100 rounded-lg p-3 shadow-sm">
+                  <div className="flex-1 text-sm text-slate-700 flex flex-col justify-center">
+                    Need help signing up? Call us or chat on WhatsApp — we're here to help.
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <a href="tel:+919876543210" className="inline-flex items-center gap-2 px-3 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm hover:bg-indigo-100 transition-colors">
+                      <Phone className="w-4 h-4" />
+                      +91 98765 43210
+                    </a>
+                    <a href="https://wa.me/919876543210?text=Hi%20I%20need%20help%20signing%20up" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-3 py-2 bg-green-50 text-green-700 rounded-lg text-sm hover:bg-green-100 transition-colors">
+                      <MessageCircle className="w-4 h-4" />
+                      Chat on WhatsApp
+                    </a>
+                  </div>
+                </div>
               </div>
             </div>
 
             <div>
               <div className="rounded-2xl p-8 shadow-md border border-blue-100 bg-gradient-to-br from-white/80 to-blue-100 text-blue-900 h-full">
                 <div className="mb-4">
-                  <h3 className="text-2xl font-bold">Our Solution</h3>
+                  <h3 className="text-2xl font-bold">Introducing an AI-Powered PSU Tender Management & Bid Automation Platform</h3>
                 </div>
-                <p className="text-blue-800 mb-4 leading-relaxed">
-                  QistonPe automates opportunity discovery, speeds up bid creation, and connects manufacturers to order-backed financing — so teams can focus on production while the platform handles matching, documentation, and working capital.
-                </p>
-                <ul className="list-disc pl-5 text-blue-800 space-y-2">
-                  <li>Automated HSN & keyword matching to surface high-fit tenders.</li>
-                  <li>AI-assisted BoM and bid document generation to reduce prep time.</li>
-                  <li>Order-backed financing to bridge procurement and production.</li>
-                </ul>
+
+                <p className="text-blue-800 mb-4 leading-relaxed">An AI-embedded platform designed specifically for MSME manufacturers supplying to PSU OEMs in India.</p>
+
+                <p className="text-blue-800 font-semibold mb-2">It does three critical things:</p>
+
+
+                {/* Visual Timeline (Stepper) */}
+                <div className="mb-4">
+                  <ol className="relative border-l-4 border-blue-200 ml-2 pl-8 space-y-10">
+                    <li className="group flex flex-col gap-2 relative">
+                      <span className="absolute -left-8 top-1.5 flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-indigo-400 shadow-lg border-4 border-white group-hover:scale-110 transition-transform">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" /></svg>
+                      </span>
+                      <h4 className="text-lg font-semibold text-blue-900 mb-1">AI Powered Tender Discovery Across 90+ PSU OEMs</h4>
+                      <ul className="list-none pl-0 text-blue-800 space-y-1">
+                        <li>Automatically scans and curates relevant tenders from multiple PSU portals.</li>
+                        <li>No more switching portals. No more missed opportunities.</li>
+                        <li>No manual tracking spreadsheets — intelligent government tender discovery built for MSMEs.</li>
+                      </ul>
+                    </li>
+                    <li className="group flex flex-col gap-2 relative">
+                      <span className="absolute -left-8 top-1.5 flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-indigo-400 shadow-lg border-4 border-white group-hover:scale-110 transition-transform">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" /></svg>
+                      </span>
+                      <h4 className="text-lg font-semibold text-blue-900 mb-1">Eligibility & Risk Checks in Minutes</h4>
+                      <p className="text-blue-800 mb-1">Our AI Engine instantly analyzes:</p>
+                      <ul className="list-none pl-0 text-blue-800 space-y-1">
+                        <li>Technical disqualification criteria</li>
+                        <li>Compliance Requirements</li>
+                        <li>Documentation gaps</li>
+                        <li>Risk Factors</li>
+                      </ul>
+                      <p className="text-blue-800 mt-1">Apply only where you have a real chance to win.</p>
+                    </li>
+                    <li className="group flex flex-col gap-2 relative">
+                      <span className="absolute -left-8 top-1.5 flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-br from-blue-600 to-indigo-400 shadow-lg border-4 border-white group-hover:scale-110 transition-transform">
+                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4" /></svg>
+                      </span>
+                      <h4 className="text-lg font-semibold text-blue-900 mb-1">Automated Bid-Ready Documentation</h4>
+                      <p className="text-blue-800 mb-1">Upload basic company data once. The platform generates:</p>
+                      <ul className="list-none pl-0 text-blue-800 space-y-1">
+                        <li>Structured technical documentation</li>
+                        <li>Compliance-aligned bid formats</li>
+                        <li>Organized submission-ready files</li>
+                        <li>Error-minimized documentation — reduce bid preparation time by up to 95%</li>
+                      </ul>
+                      <p className="text-blue-800 mt-1">This is automated government tender documentation software built for speed and accuracy.</p>
+                    </li>
+                  </ol>
+                </div>
+
                 <div className="mt-6">
                   <button onClick={() => navigate('/signup')} className="inline-flex items-center gap-2 px-4 py-2 bg-blue-800 text-white rounded-lg font-semibold shadow-sm hover:bg-blue-900">Get Started</button>
                 </div>
@@ -331,114 +421,158 @@ export function MarketingLandingPage() {
           </div>
         </div>
       </section>
+      
+{/* MSME Specific Section - centered above coverage strength */}
+      <div className="flex justify-center bg-white py-16 animate-fadein">
+        <div className="w-full max-w-4xl px-6">
+          <div className="rounded-2xl shadow-lg border border-blue-100 bg-white p-8">
+            <h3 className="text-2xl font-bold text-blue-900 mb-4">Built Specifically for Indian MSMEs</h3>
+            <p className="text-blue-800 mb-4">Unlike generic tender portals, this is a complete MSME tender automation platform:</p>
+            <ul className="list-disc pl-5 text-blue-900 space-y-2 mb-4">
+              <li>Designed for Indian PSU procurement processes</li>
+              <li>Structured around real compliance required</li>
+              <li>Simplified interface (no enterprise complexity)</li>
+              <li>Secured and aligned with Indian data protection regulations</li>
+              <li>Your preoperatory bid data is never made public</li>
+            </ul>
+            <div className="text-blue-700 font-semibold">Security and compliance are foundational to the platform.</div>
+          </div>
+        </div>
+      </div>
 
+      {/* How it Works & Security Section - below MSME section */}
+      <div id="how-it-works" className="bg-white pb-16 animate-fadein">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* How it Works Box */}
+            <div className="rounded-2xl shadow-lg border border-blue-200 bg-blue-50 p-8 flex flex-col justify-between">
+              <h3 className="text-2xl font-bold text-blue-900 mb-4">How it Works</h3>
+              <ol className="list-decimal pl-5 text-blue-900 space-y-2 mb-4">
+                <li><span className="font-semibold text-blue-800">Create your company profile once</span><br /><span className="text-blue-700">Enter basic company and capability information once.</span></li>
+                <li><span className="font-semibold text-blue-800">AI Curates relevant tenders automatically</span><br /><span className="text-blue-700">Receive a filtered list based on your sector and eligibility</span></li>
+                <li><span className="font-semibold text-blue-800">Check eligibility & risks instantly</span><br /><span className="text-blue-700">Understand qualification gaps before bidding.</span></li>
+                <li><span className="font-semibold text-blue-800">Generate bid-ready documentation in minutes</span><br /><span className="text-blue-700">Download structured, compliant documentation in minutes.</span></li>
+              </ol>
+              <div className="text-blue-900 font-semibold mb-2">Submit. Track. Repeat.</div>
+              <div className="text-blue-700">This transforms your tender bidding process into a systematic growth engine.</div>
+            </div>
+            {/* Security Box */}
+            <div className="rounded-2xl shadow-lg border border-green-100 bg-green-50 p-8 flex flex-col justify-between">
+              <h3 className="text-2xl font-bold text-green-900 mb-4">Is my data Secure?</h3>
+              <div className="text-green-800 text-lg font-semibold mb-2">Yes.</div>
+              <ul className="list-disc pl-5 text-green-900 space-y-2 mb-4">
+                <li>Hosted under Indian compliance standards</li>
+                <li>Governed by applicable Indian data protection laws</li>
+                <li>No public sharing of proprietary company data</li>
+                <li>Secure access architecture</li>
+              </ul>
+              <div className="text-green-900 mb-2">We understand the sensitivity of bid documents.</div>
+              <div className="text-green-700 font-semibold">Security is built into the platform from day one.</div>
+            </div>
+          </div>
+          {/* Offer Section: Start Free for 6 Months (Full-Width Banner) */}
+          <div className="mt-12 w-full">
+            <div className="w-full flex flex-col md:flex-row items-center gap-8 px-0 py-10 bg-gradient-to-r from-blue-50 via-white to-indigo-50 border-y-2 border-blue-200">
+              <div className="flex flex-col items-center md:items-start md:w-1/3 w-full pl-8 md:pl-16">
+                <img src="/assets/circlelogo.png" alt="Company Logo" className="w-16 h-16 object-contain rounded-full mb-3 border-4 border-white shadow-lg" />
+                <div className="text-3xl font-extrabold text-blue-900 mb-1 tracking-tight drop-shadow">Start Free for 6 Months</div>
+                <div className="text-base text-blue-700 mb-1">No upfront cost. No commitment.</div>
+                <button
+                  onClick={() => navigate('/signup')}
+                  className="mt-3 inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl font-semibold shadow-lg hover:scale-[1.04] transition-transform text-base"
+                >
+                  Start Now <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="flex-1 flex flex-col md:flex-row gap-8 md:gap-12 items-center md:items-start justify-between w-full pr-8 md:pr-16">
+                <div className="flex flex-col gap-2 text-blue-900 text-lg font-medium md:w-1/2">
+                  <span>Test it on real tenders.</span>
+                  <span>See the difference in speed and compliance yourself.</span>
+                </div>
+                <div className="flex flex-col gap-2 text-blue-800 text-base md:w-1/2">
+                  <span>• Apply more, reduce rejection risk</span>
+                  <span>• Walk away if it doesn’t help you</span>
+                  <span>• Built for MSMEs, powered by AI</span>
+                  <span className="text-blue-700 font-semibold italic mt-2">Risk-free trial for Indian manufacturers</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Final CTA Section - independent, below offer (Redesigned) */}
+        <div className="mt-20 flex justify-center">
+          <div className="w-full max-w-2xl">
+            <div className="relative flex flex-col md:flex-row items-stretch overflow-hidden rounded-3xl shadow-2xl border border-indigo-300 bg-gradient-to-br from-indigo-50 via-blue-100 to-white">
+              {/* Left: Motivational headline */}
+              <div className="flex flex-col justify-center px-8 py-10 md:w-1/2 w-full bg-gradient-to-br from-indigo-700 to-blue-700 text-white text-left">
+                <div className="text-2xl font-extrabold mb-2 drop-shadow">Ready to win more PSU Business?</div>
+                <div className="text-base font-medium mb-4">Stop manually chasing tenders.<br/>Start scaling systematically with AI.</div>
+                <button
+                  onClick={() => navigate('/signup')}
+                  className="mt-2 inline-flex items-center gap-2 px-6 py-3 bg-white text-indigo-700 rounded-xl font-semibold shadow-lg hover:bg-indigo-50 hover:text-indigo-900 transition-transform text-base"
+                >
+                  Start Free for 6 Months <ArrowRight className="w-5 h-5" />
+                </button>
+              </div>
+              {/* Right: Key points */}
+              <div className="flex flex-col justify-center px-8 py-10 md:w-1/2 w-full bg-white/90 text-blue-900 text-left">
+                <div className="text-base font-semibold mb-2">Built for MSMEs.<br/>Powered by AI.<br/>Designed to help you win more PSU contracts.</div>
+                <ul className="list-disc pl-5 text-blue-800 space-y-2 mb-3">
+                  <li>Automate tender discovery & documentation</li>
+                  <li>Reduce manual errors and rejections</li>
+                  <li>Grow your PSU business with confidence</li>
+                </ul>
+                <div className="text-indigo-700 font-semibold italic mt-2">Join the next wave of MSME growth</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Social proof removed per user request */}
       {/* Coverage Strength (improved card grid) */}
-      <section id="coverage-strength" className="py-16 bg-slate-50">
+      <section id="coverage-strength" className="py-20 bg-slate-50 animate-fadein">
         <div className="max-w-7xl mx-auto px-6">
           <div className="text-center mb-8">
-            <h3 className="text-sm font-semibold text-indigo-700 tracking-widest uppercase">Coverage Strength</h3>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-3">We cover all major tender sources</h2>
-            <p className="text-slate-600 mt-2">Comprehensive, real-time coverage across public and private sources — so you never miss an opportunity.</p>
-          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            <div className="bg-blue-50 rounded-2xl p-6 shadow-sm hover:shadow-lg transition transform hover:-translate-y-1">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center mt-1">
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="text-base font-semibold text-slate-900">Central Marketplace</div>
-                  <div className="text-sm text-slate-600">Aggregated public listings</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-blue-50 rounded-2xl p-6 shadow-sm hover:shadow-lg transition transform hover:-translate-y-1">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center mt-1">
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="text-base font-semibold text-slate-900">GeM</div>
-                  <div className="text-sm text-slate-600">Government e-Marketplace</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-blue-50 rounded-2xl p-6 shadow-sm hover:shadow-lg transition transform hover:-translate-y-1">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center mt-1">
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="text-base font-semibold text-slate-900">CPPP</div>
-                  <div className="text-sm text-slate-600">Central Public Procurement Portal</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-blue-50 rounded-2xl p-6 shadow-sm hover:shadow-lg transition transform hover:-translate-y-1">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center mt-1">
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="text-base font-semibold text-slate-900">PSU & OEMs</div>
-                  <div className="text-sm text-slate-600">Public and OEM tenders</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-blue-50 rounded-2xl p-6 shadow-sm hover:shadow-lg transition transform hover:-translate-y-1">
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center mt-1">
-                  <CheckCircle2 className="w-6 h-6" />
-                </div>
-                <div>
-                  <div className="text-base font-semibold text-slate-900">Major Contractors</div>
-                  <div className="text-sm text-slate-600">BHEL, NTPC, HAL, IOCL, SAIL, HPCL…</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="col-span-1 md:col-span-3 lg:col-span-1 bg-blue-100 rounded-2xl p-6 shadow-sm flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-base font-semibold text-slate-900">+85 More</div>
-                <div className="text-sm text-slate-600">Regional & private portals included</div>
-              </div>
+            {/* FAQ Section */}
+            <h3 className="text-sm font-semibold text-indigo-700 tracking-widest uppercase">FAQ Section</h3>
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-3">Frequently Asked Questions</h2>
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+              {[{
+                question: "What is AI tender automation software?",
+                answer: "AI tender automation software helps MSME manufacturers automatically discover relevant PSU tenders, evaluate eligibility, and generate bid-ready documentation using artificial intelligence."
+              }, {
+                question: "How can MSMEs reduce technical rejection in PSU tenders?",
+                answer: "By using automated compliance checks and AI-driven document preparation, MSMEs can eliminate common errors that cause technical disqualification."
+              }, {
+                question: "Is this platform suitable for government tender bidding in India?",
+                answer: "Yes. The platform is specifically designed for Indian PSU OEM procurement processes across power, railways, heavy engineering, and defense sectors."
+              }, {
+                question: "Is my tender documentation data secure?",
+                answer: "Yes. The platform operates under Indian data and privacy regulations and does not publicly share proprietary company information."
+              }].map((faq, idx) => (
+                <motion.div
+                  key={faq.question}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.4 }}
+                  transition={{ duration: 0.6, delay: idx * 0.1 }}
+                  className="bg-blue-50 rounded-2xl shadow-lg border border-blue-100 p-7 flex flex-col h-full hover:shadow-2xl transition-all"
+                >
+                  <h4 className="text-lg font-semibold text-blue-900 mb-2">{faq.question}</h4>
+                  <p className="text-slate-700">{faq.answer}</p>
+                </motion.div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-indigo-600 to-blue-700 text-white relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-1/2 h-full opacity-10">
-          <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full">
-            <path d="M0 100 C 20 0 50 0 100 100 Z" fill="white" />
-          </svg>
-        </div>
-        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
-          <h2 className="text-4xl lg:text-5xl font-bold mb-6">Ready to transform your business?</h2>
-          <p className="text-indigo-100 text-xl mb-10 max-w-2xl mx-auto">
-            Join our platform today and get instant access to thousands of tender opportunities and financing solutions.
-          </p>
-          <button
-            onClick={() => navigate("/signup")}
-            className="px-10 py-4 bg-white text-indigo-700 rounded-xl font-bold text-lg hover:bg-slate-50 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 inline-flex items-center gap-2"
-          >
-            Start Now - It's Free
-            <ArrowRight className="w-5 h-5" />
-          </button>
-          <p className="mt-6 text-sm text-indigo-200">
-            No credit card required. Free plan available forever.
-          </p>
-        </div>
-      </section>
+
 
       {/* Footer */}
-      <footer className="bg-slate-50 text-slate-700 py-12 border-t border-slate-200">
+      <footer className="bg-slate-50 text-slate-700 py-16 border-t border-slate-200 animate-fadein">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>

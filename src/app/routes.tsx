@@ -7,6 +7,7 @@ import { BusinessVerification } from "./pages/BusinessVerification";
 import { HSNSetup } from "./pages/HSNSetup";
 import { WelcomeScreen } from "./pages/WelcomeScreen";
 import { MarketingLandingPage } from "./pages/MarketingLandingPage";
+import AboutPage from "./pages/AboutPage";
 // import OpportunityXLanding from "./pages/OpportunityXLanding";
 import MetalCapitalLanding from "./pages/MetalCapitalLanding";
 import { PortalPage } from "./pages/PortalPage";
@@ -19,6 +20,10 @@ import { CompleteProfile } from "./pages/CompleteProfile";
 import { TenderDetails } from "./pages/TenderDetails";
 
 export const router = createBrowserRouter([
+      {
+        path: "/about",
+        Component: AboutPage,
+      },
     // OpportunityX route removed; handled by root '/'.
     {
       path: "/metalcapital",
