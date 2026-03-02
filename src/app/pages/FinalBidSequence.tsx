@@ -31,6 +31,8 @@ export function FinalBidSequence() {
         organization: "Karnataka Public Works Department",
     };
 
+    const [viewingDoc, setViewingDoc] = useState<SequencedDocument | null>(null);
+
     const [documents, setDocuments] = useState<SequencedDocument[]>([
         { id: "1", order: 1, name: "Company Registration Certificate", size: "500kb" },
         { id: "2", order: 2, name: "GST Registration Certificate", size: "320kb" },
@@ -157,7 +159,11 @@ export function FinalBidSequence() {
                                                 </div>
 
                                                 <div className="flex items-center gap-3 border-l border-gray-200 pl-4">
-                                                    <button className="flex items-center gap-1.5 text-xs font-bold text-gray-700 hover:text-blue-600 transition-colors tooltip-trigger" title="View Document">
+                                                    <button
+                                                        onClick={() => setViewingDoc(doc)}
+                                                        className="flex items-center gap-1.5 text-xs font-bold text-gray-700 hover:text-blue-600 transition-colors tooltip-trigger"
+                                                        title="View Document"
+                                                    >
                                                         <Eye className="w-4 h-4" /> View
                                                     </button>
                                                     <button className="flex items-center gap-1.5 text-xs font-bold text-gray-700 hover:text-blue-600 transition-colors tooltip-trigger" title="Compress File">
@@ -246,6 +252,89 @@ export function FinalBidSequence() {
                     </div>
                 </div>
             </div>
+
+            {/* View Document Modal Overlay */}
+            {viewingDoc && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-6 overflow-y-auto custom-scrollbar">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                        className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl my-8 flex flex-col overflow-hidden"
+                    >
+                        {/* Modal Header */}
+                        <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+                            <div>
+                                <h3 className="text-xl font-bold text-gray-900">{viewingDoc.name}</h3>
+                                <p className="text-sm text-gray-500">Document #{viewingDoc.order} • {viewingDoc.size}</p>
+                            </div>
+                            <button
+                                onClick={() => setViewingDoc(null)}
+                                className="px-4 py-2 text-sm font-bold text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
+                            >
+                                Close Preview
+                            </button>
+                        </div>
+
+                        {/* Document Content Mock Canvas (A4 Aspect Ratio) */}
+                        <div className="bg-gray-200 p-8 flex-1 overflow-y-auto">
+                            <div className="bg-white max-w-[800px] min-h-[1000px] mx-auto shadow-md p-12 text-gray-800">
+                                <div className="border-b-2 border-gray-800 pb-6 mb-8 text-center">
+                                    <h1 className="text-3xl font-black uppercase tracking-wider mb-2">
+                                        {viewingDoc.name}
+                                    </h1>
+                                    <h2 className="text-xl text-gray-600 font-medium">Karnataka Public Works Department</h2>
+                                </div>
+
+                                <div className="space-y-6 text-[15px] leading-relaxed">
+                                    <p>
+                                        <strong>Date:</strong> {new Date().toLocaleDateString()}
+                                    </p>
+                                    <p>
+                                        <strong>Reference ID:</strong> TND-{tender.id}
+                                    </p>
+                                    <div className="h-px bg-gray-200 my-6"></div>
+                                    <p>
+                                        To,<br />
+                                        The Chief Engineer,<br />
+                                        Karnataka Public Works Department
+                                    </p>
+                                    <p className="mt-6 text-justify">
+                                        Dear Sir/Madam,
+                                        <br /><br />
+                                        We hereby submit our finalized documentation for the <strong>"{tender.title}"</strong> project as requested in the official tender notice.
+                                        This document, classified as <em>"{viewingDoc.name}"</em>, conforms to all standard terms and conditions mandated by the statutory regulations.
+                                        <br /><br />
+                                        Please find the details associated with this stage of the bidding sequence. All attached declarations, stamps, and digital sign-offs are valid through the duration of the review period.
+                                    </p>
+
+                                    {/* Mock text generation to fill out the page */}
+                                    <div className="space-y-4 text-gray-600 mt-8">
+                                        {[...Array(4)].map((_, i) => (
+                                            <p key={i} className="text-justify bg-gray-50 p-4 rounded-lg border border-gray-100 text-sm">
+                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum...
+                                            </p>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="mt-20 pt-10 border-t border-gray-300 grid grid-cols-2 gap-8 text-sm">
+                                    <div className="text-center">
+                                        <div className="h-16 w-32 mx-auto border-b border-gray-400 mb-2"></div>
+                                        <p className="font-bold">Authorized Signatory</p>
+                                        <p className="text-gray-500">Applicant Company</p>
+                                    </div>
+                                    <div className="text-center">
+                                        <div className="h-16 w-32 mx-auto border-b border-gray-400 mb-2 items-center flex justify-center text-4xl text-blue-100 opacity-50"><Building2 /></div>
+                                        <p className="font-bold">Company Stamp/Seal</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </motion.div>
+                </div>
+            )}
 
             <style>{`
         .custom-scrollbar::-webkit-scrollbar {
