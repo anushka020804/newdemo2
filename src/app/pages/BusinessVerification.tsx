@@ -37,10 +37,17 @@ export function BusinessVerification() {
     address: "",
   });
 
-  // Use Express backend proxy endpoint for PAN-to-GST
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-  const PROXY_URL = `${API_BASE_URL}/pan-to-gst`;
+  // Call RPACPC API directly (since server.cjs is not running and they support CORS)
+  const meta = import.meta as any;
+  const API_BASE_URL = meta.env.VITE_API_URL.replace('/bv012', '');
+  const PROXY_URL = meta.env.VITE_API_URL;
   const GST_PROXY_URL = `${API_BASE_URL}/get-gst-details`;
+
+  const headers = {
+    "Content-Type": "application/json",
+    token: meta.env.VITE_API_TOKEN,
+    secretkey: meta.env.VITE_API_SECRET,
+  };
 
   async function fetchGstDetails(gstNumber: string) {
     if (!gstNumber) return;
@@ -48,7 +55,7 @@ export function BusinessVerification() {
     try {
       const res = await fetch(GST_PROXY_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ gstNumber, consent: "Y" }),
       });
       const data = await res.json();
@@ -97,12 +104,13 @@ export function BusinessVerification() {
         // Fetch HSN from the new Advance API
         try {
           const hsnRes = await fetch(
-            `${API_BASE_URL}/get-gst-details-advance`,
+            `${API_BASE_URL}/bv010`,
             {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers,
               body: JSON.stringify({
-                gstNumber: gstNumber,
+                gstin: gstNumber,
+                hsnDetails: true,
                 consent: "Y",
               }),
             },
@@ -158,9 +166,7 @@ export function BusinessVerification() {
     try {
       const res = await fetch(PROXY_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify({
           pan: panValue,
           consent: "Y",
