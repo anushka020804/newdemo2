@@ -181,7 +181,10 @@ export function FinalBidSequence() {
 
                             {/* Footer Submit Button */}
                             <div className="flex justify-center pt-8 mt-4 border-t border-gray-100">
-                                <button className="px-10 py-3.5 rounded-[16px] bg-[#4F46E5] text-white font-bold text-[16px] hover:bg-[#4338ca] transition-colors shadow-sm">
+                                <button
+                                    onClick={() => navigate(`/tender/${tenderId}/final-download-submission`)}
+                                    className="px-10 py-3.5 rounded-[16px] bg-[#4F46E5] text-white font-bold text-[16px] hover:bg-[#4338ca] transition-colors shadow-sm"
+                                >
                                     Prepare Final Bid Document
                                 </button>
                             </div>

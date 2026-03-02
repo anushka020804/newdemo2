@@ -22,6 +22,7 @@ import { BidDocumentPreparation } from "./pages/BidDocumentPreparation";
 import { GeneratedBidDocuments } from "./pages/GeneratedBidDocuments";
 import { FinalDocumentEditor } from "./pages/FinalDocumentEditor";
 import { FinalBidSequence } from "./pages/FinalBidSequence";
+import { FinalDownloadSubmission } from "./pages/FinalDownloadSubmission";
 import { ProtectedRoute, PublicOnlyRoute } from "./components/RouteGuards";
 
 export const router = createBrowserRouter([
@@ -55,6 +56,7 @@ export const router = createBrowserRouter([
       { path: "/tender/:id/generated-documents", Component: GeneratedBidDocuments },
       { path: "/tender/:id/final-document-editor", Component: FinalDocumentEditor },
       { path: "/tender/:id/final-bid-sequence", Component: FinalBidSequence },
+      { path: "/tender/:id/final-download-submission", Component: FinalDownloadSubmission },
       { path: "/saved-bids", Component: SavedBids },
       { path: "/won-bids", Component: WonBids },
       { path: "/profile", Component: UserProfile },
