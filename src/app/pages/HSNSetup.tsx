@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { useNavigate } from "react-router";
-import { motion } from "motion/react";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router";
+import HSNChatbot from "../components/HSNChatbot";
+import HSNMasterFinder from "../components/HSNMasterFinder";
 import { Plus, Edit2, Trash2, Check, X, Mail, MessageCircle } from "lucide-react";
 
 interface HSNRow {
@@ -11,10 +12,34 @@ interface HSNRow {
 
 export function HSNSetup() {
   const navigate = useNavigate();
-  const [rows, setRows] = useState<HSNRow[]>([
-    { id: "1", hsnCode: "7326", productKeyword: "Steel Fasteners" },
-    { id: "2", hsnCode: "8481", productKeyword: "Industrial Valves" },
-  ]);
+  const location = useLocation();
+
+  const [rows, setRows] = useState<HSNRow[]>(() => {
+    const passedHsn = location.state?.hsnDetails;
+    if (passedHsn && Array.isArray(passedHsn) && passedHsn.length > 0) {
+      return passedHsn.map((hsn: any, index: number) => ({
+        id: Date.now().toString() + index,
+        hsnCode: hsn.hsnCode || "",
+        productKeyword: hsn.hsnDescription || "",
+      }));
+    }
+    return [
+      { id: "1", hsnCode: "7326", productKeyword: "Steel Fasteners" },
+      { id: "2", hsnCode: "8481", productKeyword: "Industrial Valves" },
+    ];
+  });
+
+  useEffect(() => {
+    const passedHsn = location.state?.hsnDetails;
+    if (passedHsn && Array.isArray(passedHsn) && passedHsn.length > 0) {
+      setRows(passedHsn.map((hsn: any, index: number) => ({
+        id: Date.now().toString() + index,
+        hsnCode: hsn.hsnCode || "",
+        productKeyword: hsn.hsnDescription || "",
+      })));
+    }
+  }, [location.state]);
+
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editHsn, setEditHsn] = useState("");
   const [editKeyword, setEditKeyword] = useState("");
@@ -22,11 +47,7 @@ export function HSNSetup() {
   const [whatsappNotif, setWhatsappNotif] = useState(true);
 
   const handleAddRow = () => {
-    const newRow: HSNRow = {
-      id: Date.now().toString(),
-      hsnCode: "",
-      productKeyword: "",
-    };
+    const newRow: HSNRow = { id: Date.now().toString(), hsnCode: "", productKeyword: "" };
     setRows([...rows, newRow]);
     setEditingId(newRow.id);
     setEditHsn("");
@@ -44,27 +65,20 @@ export function HSNSetup() {
       alert("Product Keyword is mandatory.");
       return;
     }
-    setRows(rows.map((row) =>
-      row.id === id ? { ...row, hsnCode: editHsn, productKeyword: editKeyword } : row
-    ));
+    setRows(rows.map((row) => (row.id === id ? { ...row, hsnCode: editHsn, productKeyword: editKeyword } : row)));
     setEditingId(null);
   };
 
   const handleCancel = (id: string) => {
-    // If it's a new row with no data, remove it
     const row = rows.find((r) => r.id === id);
-    if (row && !row.hsnCode && !row.productKeyword) {
-      setRows(rows.filter((r) => r.id !== id));
-    }
+    if (row && !row.hsnCode && !row.productKeyword) setRows(rows.filter((r) => r.id !== id));
     setEditingId(null);
   };
 
-  const handleDelete = (id: string) => {
-    setRows(rows.filter((row) => row.id !== id));
-  };
+  const handleDelete = (id: string) => setRows(rows.filter((row) => row.id !== id));
 
   const handleSubmit = () => {
-    const hasEmptyKeywords = rows.some(row => !row.productKeyword.trim());
+    const hasEmptyKeywords = rows.some((row) => !row.productKeyword.trim());
     if (hasEmptyKeywords || rows.length === 0) {
       alert("Please add at least one product with a keyword.");
       return;
@@ -74,176 +88,126 @@ export function HSNSetup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 flex flex-col">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+    <div className="min-h-screen bg-[#f8fafc] font-sans text-slate-900">
+
+      {/* Top Navbar */}
+      <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center">
+          <span className="text-xl font-bold text-blue-600 tracking-tight">
             OpportunityX
-          </h1>
+          </span>
         </div>
-      </div>
+      </nav>
 
-      {/* Progress Steps */}
-      <div className="bg-white border-b border-gray-200 px-6 py-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center">
-                <Check className="w-5 h-5" />
-              </div>
-              <span className="text-sm text-green-600">Business Verification</span>
+      {/* Stepper */}
+      <div className="flex items-center justify-center py-10">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-emerald-500 text-white flex items-center justify-center">
+              <Check className="w-3.5 h-3.5 stroke-[3]" />
             </div>
-            <div className="w-16 h-0.5 bg-indigo-600" />
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-indigo-600 text-white rounded-full flex items-center justify-center">
-                2
-              </div>
-              <span className="text-sm text-indigo-600">HSN Setup</span>
+            <span className="text-sm font-medium text-emerald-600">Business Verification</span>
+          </div>
+          <div className="w-16 h-px bg-slate-300"></div>
+
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">
+              2
             </div>
-            <div className="w-16 h-0.5 bg-gray-300" />
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center">
-                3
-              </div>
-              <span className="text-sm text-gray-500">Complete</span>
+            <span className="text-sm font-medium text-indigo-600">HSN Setup</span>
+          </div>
+          <div className="w-16 h-px bg-slate-200"></div>
+
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center text-xs font-bold">
+              3
             </div>
+            <span className="text-sm font-medium text-slate-400">Complete</span>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 p-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="max-w-5xl mx-auto"
-        >
-          <div className="text-center mb-8">
-            <h2 className="text-3xl mb-2">HSN & Product Setup</h2>
-            <div className="text-gray-600 text-sm mb-2">
-              <strong>What is HSN?</strong> HSN (Harmonized System of Nomenclature) is a code used to classify goods for taxation and compliance. Providing HSN helps us match you with the most relevant tenders for your products.
-            </div>
-            <p className="text-gray-600">Add Keywords to match relevant tenders (HSN is optional)</p>
-          </div>
+      {/* Header Titles */}
+      <div className="text-center mb-10 px-4">
+        <h1 className="text-2xl font-bold text-slate-900 mb-2">HSN & Product Setup</h1>
+        <p className="text-sm text-slate-600">Add HSN codes and product keywords to match relevant tenders</p>
+      </div>
 
-          {/* HSN Table */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden mb-6"
-          >
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-gray-200">
-                    <th className="px-6 py-4 text-left text-sm text-gray-700">HSN Code (Optional)</th>
-                    <th className="px-6 py-4 text-left text-sm text-gray-700">Product Keyword <span className="text-red-500">*</span></th>
-                    <th className="px-6 py-4 text-right text-sm text-gray-700">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.map((row, index) => (
-                    <tr
-                      key={row.id}
-                      className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50/50"
-                        }`}
-                    >
-                      <td className="px-6 py-4">
-                        {editingId === row.id ? (
-                          <input
-                            type="text"
-                            value={editHsn}
-                            onChange={(e) => setEditHsn(e.target.value)}
-                            placeholder="7326"
-                            className="w-full px-3 py-2 bg-white border border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            autoFocus
-                          />
-                        ) : (
-                          <span className="text-gray-900">{row.hsnCode || "-"}</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        {editingId === row.id ? (
-                          <input
-                            type="text"
-                            value={editKeyword}
-                            onChange={(e) => setEditKeyword(e.target.value)}
-                            placeholder="Steel Fasteners"
-                            className="w-full px-3 py-2 bg-white border border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                          />
-                        ) : (
-                          <span className="text-gray-900">{row.productKeyword}</span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-2">
-                          {editingId === row.id ? (
-                            <>
-                              <button
-                                onClick={() => handleSave(row.id)}
-                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                title="Save"
-                              >
-                                <Check className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleCancel(row.id)}
-                                className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                                title="Cancel"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <button
-                                onClick={() => handleEdit(row)}
-                                className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                                title="Edit"
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleDelete(row.id)}
-                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                title="Delete"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </>
-                          )}
+      {/* Main Grid */}
+      <div className="max-w-7xl mx-auto px-6 pb-24 flex flex-col lg:flex-row gap-8 items-start justify-center">
+
+        {/* Left Column (Forms) */}
+        <div className="w-full lg:max-w-3xl space-y-6">
+
+          {/* Table Card */}
+          <div className="bg-white rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.04)] overflow-hidden border border-slate-100 pb-2">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50/80 border-b border-slate-100 text-[13px] font-semibold text-slate-700">
+                  <th className="px-6 py-4">HSN Code <span className="text-slate-400 font-normal ml-1">(Optional)</span></th>
+                  <th className="px-6 py-4">Product Keyword</th>
+                  <th className="px-6 py-4 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row) => (
+                  <tr key={row.id} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                    <td className="px-6 py-4">
+                      {editingId === row.id ? (
+                        <input
+                          type="text"
+                          value={editHsn}
+                          onChange={(e) => setEditHsn(e.target.value)}
+                          className="bg-white border border-slate-300 rounded-md px-3 py-1.5 text-sm w-28 focus:outline-none focus:border-indigo-500"
+                        />
+                      ) : row.hsnCode ? (
+                        <span className="text-sm font-medium text-slate-700">{row.hsnCode}</span>
+                      ) : (
+                        <span className="text-sm text-slate-400">—</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {editingId === row.id ? (
+                        <input
+                          type="text"
+                          value={editKeyword}
+                          onChange={(e) => setEditKeyword(e.target.value)}
+                          autoFocus
+                          className="bg-white border border-slate-300 rounded-md px-3 py-1.5 text-sm w-full focus:outline-none focus:border-indigo-500"
+                        />
+                      ) : (
+                        <span className="text-sm font-medium text-slate-700">{row.productKeyword}</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {editingId === row.id ? (
+                        <div className="flex items-center justify-center gap-3">
+                          <button onClick={() => handleSave(row.id)} className="text-emerald-600 hover:bg-emerald-50 p-1 rounded transition-colors"><Check className="w-4 h-4" /></button>
+                          <button onClick={() => handleCancel(row.id)} className="text-slate-400 hover:bg-slate-100 p-1 rounded transition-colors"><X className="w-4 h-4" /></button>
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      ) : (
+                        <div className="flex items-center justify-center gap-4">
+                          <button onClick={() => handleEdit(row)} className="text-indigo-500 hover:text-indigo-700 transition-colors"><Edit2 className="w-4 h-4" /></button>
+                          <button onClick={() => handleDelete(row.id)} className="text-rose-500 hover:text-rose-700 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
-            {/* Add Row Button */}
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-              <button
-                onClick={handleAddRow}
-                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 transition-colors"
-              >
-                <Plus className="w-5 h-5" />
-                <span>Add Row</span>
+            <div className="px-6 mt-4 mb-2 text-left">
+              <button onClick={handleAddRow} className="inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors">
+                <Plus className="w-4 h-4" /> Add Row
               </button>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Notification Preferences Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 mb-6"
-          >
-            <h3 className="text-xl mb-2">Notification Preferences</h3>
-            <p className="text-gray-600 mb-6">Get alerts for relevant tenders</p>
+          {/* Preferences Card */}
+          <div className="bg-white rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-slate-100 p-6">
+            <h3 className="text-[15px] font-semibold text-slate-900 mb-1">Notification Preferences</h3>
+            <p className="text-sm text-slate-500 mb-6">Get alerts for relevant tenders</p>
 
             <div className="space-y-4">
               <label className="flex items-center gap-3 cursor-pointer group">
@@ -251,12 +215,10 @@ export function HSNSetup() {
                   type="checkbox"
                   checked={emailNotif}
                   onChange={(e) => setEmailNotif(e.target.checked)}
-                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-2 focus:ring-indigo-500"
+                  className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2"
                 />
-                <div className="flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-indigo-600" />
-                  <span className="text-gray-900">Email</span>
-                </div>
+                <Mail className="w-4 h-4 text-indigo-600" />
+                <span className="text-sm font-medium text-slate-800">Email</span>
               </label>
 
               <label className="flex items-center gap-3 cursor-pointer group">
@@ -264,32 +226,38 @@ export function HSNSetup() {
                   type="checkbox"
                   checked={whatsappNotif}
                   onChange={(e) => setWhatsappNotif(e.target.checked)}
-                  className="w-5 h-5 text-indigo-600 border-gray-300 rounded focus:ring-2 focus:ring-indigo-500"
+                  className="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2"
                 />
-                <div className="flex items-center gap-2">
-                  <MessageCircle className="w-5 h-5 text-green-600" />
-                  <span className="text-gray-900">WhatsApp</span>
-                </div>
+                <MessageCircle className="w-4 h-4 text-emerald-600" />
+                <span className="text-sm font-medium text-slate-800">WhatsApp</span>
               </label>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Submit Button */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex justify-center"
-          >
+          <div className="flex justify-center pt-2">
             <button
               onClick={handleSubmit}
-              className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-12 py-3.5 rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+              className="bg-[#3D4BFF] hover:bg-blue-700 text-white text-sm font-medium px-12 py-2.5 rounded-md transition-colors shadow-sm"
             >
               Submit
             </button>
-          </motion.div>
-        </motion.div>
+          </div>
+
+          <div className="mt-4 bg-white rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+            <HSNMasterFinder />
+          </div>
+
+        </div>
+
+        {/* Right Column (Chatbot) */}
+        <div className="w-full lg:w-[380px] shrink-0 sticky top-24">
+          <div className="h-[520px]">
+            <HSNChatbot />
+          </div>
+        </div>
+
       </div>
+
     </div>
   );
 }

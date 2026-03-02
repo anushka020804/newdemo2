@@ -38,15 +38,18 @@ export function BusinessVerification() {
   });
 
   // Call RPACPC API directly (since server.cjs is not running and they support CORS)
-  const meta = import.meta as any;
-  const API_BASE_URL = meta.env.VITE_API_URL.replace('/bv012', '');
-  const PROXY_URL = meta.env.VITE_API_URL;
+  // @ts-ignore
+  const API_BASE_URL = import.meta.env.VITE_API_URL.replace('/bv012', '');
+  // @ts-ignore
+  const PROXY_URL = import.meta.env.VITE_API_URL;
   const GST_PROXY_URL = `${API_BASE_URL}/get-gst-details`;
 
   const headers = {
     "Content-Type": "application/json",
-    token: meta.env.VITE_API_TOKEN,
-    secretkey: meta.env.VITE_API_SECRET,
+    // @ts-ignore
+    token: import.meta.env.VITE_API_TOKEN,
+    // @ts-ignore
+    secretkey: import.meta.env.VITE_API_SECRET,
   };
 
   async function fetchGstDetails(gstNumber: string) {

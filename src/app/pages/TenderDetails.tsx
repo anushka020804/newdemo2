@@ -1,862 +1,589 @@
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { motion } from "motion/react";
-import { 
+import { motion, AnimatePresence } from "motion/react";
+import jsPDF from "jspdf";
+import {
   ArrowLeft,
   Building2,
-  Calendar,
-  IndianRupee,
-  MapPin,
-  FileText,
-  Clock,
-  AlertCircle,
-  CheckCircle2,
-  Download,
-  Share2,
-  Bookmark,
   Sparkles,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  ShieldAlert,
+  ListChecks,
   Award,
-  Upload
+  Download,
+  Eye,
+  Bot,
+  Send,
+  Paperclip,
+  CheckCircle2
 } from "lucide-react";
-import jsPDF from "jspdf";
-import { useState } from "react";
 
 export function TenderDetails() {
   const navigate = useNavigate();
   const { tenderId } = useParams();
-  
-  // State for tracking uploaded documents for each criterion
-  const [uploadedCriteria, setUploadedCriteria] = useState<{ [key: string]: boolean }>({});
 
-  // Handle document upload for eligibility criteria
-  const handleDocumentUpload = (criteria: string) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.pdf,.jpg,.jpeg,.png';
-    input.onchange = (e: Event) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        // Update uploaded criteria state
-        setUploadedCriteria(prev => ({
-          ...prev,
-          [criteria]: true
-        }));
-        
-        // If ISO certification is uploaded, save to localStorage
-        if (criteria.toLowerCase().includes('iso')) {
-          localStorage.setItem('isoUploaded', 'true');
-        }
-        
-        alert(`${criteria} uploaded successfully!`);
-      }
-    };
-    input.click();
+  // Accordion state management
+  const [openSections, setOpenSections] = useState<{ [key: string]: boolean }>({
+    summary: true, // Default open
+    risks: false,
+    scope: false,
+    evaluation: false,
+    documents: false,
+  });
+
+  const handleDownloadReport = () => {
+    // Basic standard PDF generation using jsPDF
+    const doc = new jsPDF();
+
+    // Title
+    doc.setFontSize(22);
+    doc.setTextColor(37, 99, 235); // Blue
+    doc.text("Tender Analysis Report", 20, 20);
+
+    // Tender Basics
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Tender Title: ${tender.title}`, 20, 40);
+    doc.text(`Organization: ${tender.organization}`, 20, 50);
+    doc.text(`Reference ID: ${tender.id}`, 20, 60);
+
+    // Metrics
+    doc.setFontSize(12);
+    doc.text(`Tender Value: ${tender.tenderValue}`, 20, 80);
+    doc.text(`Submission Deadline: ${tender.submissionDeadline}`, 20, 90);
+    doc.text(`Quantity: ${tender.quantity}`, 20, 100);
+    doc.text(`HSN Code: ${tender.hsnCode}`, 20, 110);
+
+    // Eligibility Score
+    doc.setFontSize(16);
+    doc.setTextColor(34, 197, 94); // Green
+    doc.text("Eligibility Score: 90% (Highly Eligible)", 20, 130);
+
+    // Save the PDF
+    doc.save(`Tender_Report_${tender.id}.pdf`);
   };
 
-  // Tender data based on ID
+  const toggleSection = (section: string) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
+  // Mock Tender Data
   const getTenderData = (id: string | undefined) => {
-    const tenderDatabase: { [key: string]: any } = {
-      "1": {
-        id: "1",
-        title: "Industrial Valves Supply - Karnataka PWD",
-        organization: "Karnataka Public Works Department",
-        description: "Supply and installation of industrial valves for water distribution projects across Karnataka state. The project requires high-quality valves meeting IS standards with proper documentation and certification.",
-        tenderValue: "₹45,00,000",
-        estimatedValue: "₹40,00,000 - ₹50,00,000",
-        publishDate: "Jan 28, 2026",
-        submissionDeadline: "Feb 15, 2026",
-        openingDate: "Feb 16, 2026",
-        location: "Bangalore, Karnataka",
-        matchScore: 92,
-        category: "Industrial Equipment",
-        sector: "Public Works",
-        
-        eligibilityCriteria: [
-          { criteria: "Valid GST Registration", met: true },
-          { criteria: "Minimum 3 years experience in valve supply", met: true },
-          { criteria: "ISO 9001:2015 Certification", met: false },
-          { criteria: "Previous government tender experience", met: true },
-          { criteria: "Turnover of minimum ₹1 Crore in last FY", met: true },
-        ],
-        
-        requiredDocuments: [
-          "Company Registration Certificate",
-          "GST Registration Certificate",
-          "PAN Card",
-          "ISO Certification (if available)",
-          "Financial Statements (Last 3 Years)",
-          "Previous Work Experience Certificates",
-          "Technical Specifications Compliance",
-        ],
-        
-        scopeOfWork: [
-          "Supply of 500+ industrial valves (various sizes: 2\", 4\", 6\", 8\")",
-          "Installation and commissioning at designated sites",
-          "Testing and quality certification",
-          "1-year warranty and maintenance support",
-          "Training for PWD staff on valve operation",
-        ],
-        
-        summary: "This tender involves the supply and installation of over 500 industrial valves for Karnataka's water distribution infrastructure. The project requires IS 14846:2000 compliant valves with cast iron or ductile iron bodies, suitable for PN 10/16 working pressure. The scope includes delivery, on-site installation, quality testing, and a 1-year warranty period. Payment will be structured in four phases: 30% advance, 40% on delivery, 20% post-installation, and 10% after warranty completion. Suppliers must demonstrate minimum 3 years of experience, hold valid GST registration, and show a turnover of at least ₹1 Crore in the previous fiscal year. ISO 9001:2015 certification is preferred. The successful bidder will also provide operational training to PWD staff.",
-        
-        contactInfo: {
-          officer: "Executive Engineer",
-          department: "Karnataka PWD - Water Resources Division",
-          email: "ee.pwd.kr@gov.in",
-          phone: "+91-80-2234-5678",
-        }
-      },
-      "2": {
-        id: "2",
-        title: "Steel Fasteners Supply - NHAI",
-        organization: "National Highways Authority of India",
-        description: "Supply of high-grade steel fasteners for highway construction and maintenance projects. Requires ASTM A325 compliant bolts, nuts, and washers with proper testing certificates and quality documentation.",
-        tenderValue: "₹82,50,000",
-        estimatedValue: "₹75,00,000 - ₹90,00,000",
-        publishDate: "Jan 25, 2026",
-        submissionDeadline: "Feb 12, 2026",
-        openingDate: "Feb 13, 2026",
-        location: "New Delhi",
-        matchScore: 88,
-        category: "Construction Materials",
-        sector: "Infrastructure",
-        
-        eligibilityCriteria: [
-          { criteria: "Valid GST Registration", met: true },
-          { criteria: "ISO 3506 material compliance certification", met: true },
-          { criteria: "Minimum 5 years experience in fastener supply", met: true },
-          { criteria: "NABL accredited testing lab reports", met: false },
-          { criteria: "Turnover of minimum ₹2 Crore in last FY", met: true },
-        ],
-        
-        requiredDocuments: [
-          "Company Registration Certificate",
-          "GST Registration Certificate",
-          "Material Test Certificates",
-          "ISO 3506 Compliance Certificate",
-          "Financial Statements (Last 3 Years)",
-          "Previous Supply Order Copies",
-          "Manufacturing Facility Details",
-        ],
-        
-        scopeOfWork: [
-          "Supply of 10,000+ steel fasteners (M12 to M30 sizes)",
-          "Hot-dip galvanized coating as per IS 2629",
-          "Material testing and certification",
-          "Packaging as per NHAI specifications",
-          "Delivery to multiple project sites across North India",
-        ],
-        
-        summary: "This tender covers the supply of high-strength steel fasteners for NHAI's highway construction projects across northern India. All fasteners must comply with ASTM A325 standards and be hot-dip galvanized per IS 2629. The order includes various bolt sizes from M12 to M30, complete with nuts and washers. Payment terms: 20% advance, 60% on delivery, 20% after installation verification. Suppliers must have minimum 5 years experience, NABL-accredited test reports, and demonstrate₹2 Crore turnover. Delivery timeline is 60 days from order placement.",
-        
-        contactInfo: {
-          officer: "Project Director",
-          department: "NHAI - Northern Region",
-          email: "pd.north@nhai.gov.in",
-          phone: "+91-11-2345-6789",
-        }
-      },
-      "3": {
-        id: "3",
-        title: "Railway Equipment Supply - Indian Railways",
-        organization: "Indian Railways",
-        description: "Supply of specialized railway equipment including signal components, track fasteners, and safety devices for modernization of railway infrastructure across multiple zones.",
-        tenderValue: "₹35,00,000",
-        estimatedValue: "₹32,00,000 - ₹38,00,000",
-        publishDate: "Jan 30, 2026",
-        submissionDeadline: "Feb 20, 2026",
-        openingDate: "Feb 21, 2026",
-        location: "Mumbai, Maharashtra",
-        matchScore: 85,
-        category: "Railway Equipment",
-        sector: "Transportation",
-        
-        eligibilityCriteria: [
-          { criteria: "Valid GST Registration", met: true },
-          { criteria: "RDSO approval for railway components", met: false },
-          { criteria: "Minimum 4 years experience in railway supply", met: true },
-          { criteria: "Previous railway tender completion", met: true },
-          { criteria: "Turnover of minimum ₹1.5 Crore in last FY", met: true },
-        ],
-        
-        requiredDocuments: [
-          "Company Registration Certificate",
-          "GST Registration Certificate",
-          "RDSO Approval Certificate",
-          "IS 2062 Material Compliance",
-          "Financial Statements (Last 3 Years)",
-          "Railway Project Experience Certificates",
-          "Quality Management System Certificate",
-        ],
-        
-        scopeOfWork: [
-          "Supply of 2500+ railway equipment units",
-          "Signal components meeting RDSO specifications",
-          "Track fastening systems with rust-proof coating",
-          "Installation support and technical guidance",
-          "2-year warranty on all supplied equipment",
-        ],
-        
-        summary: "This tender is for supplying specialized railway equipment to support Indian Railways' infrastructure modernization program. All components must meet RDSO specifications and IS 2062 material standards. The scope includes signal components, track fasteners, and safety devices. Payment schedule: 25% advance, 50% on delivery, 25% after successful installation and testing. Bidders must demonstrate railway supply experience, hold necessary RDSO approvals, and show financial capability with ₹1.5 Crore minimum turnover.",
-        
-        contactInfo: {
-          officer: "Chief Engineer (Procurement)",
-          department: "Indian Railways - Western Zone",
-          email: "ce.western@indianrailways.gov.in",
-          phone: "+91-22-2267-8901",
-        }
-      },
-      "4": {
-        id: "4",
-        title: "Industrial Valves - Delhi Metro",
-        organization: "Delhi Metro Rail Corporation",
-        description: "Supply of pneumatic and hydraulic valves for metro station infrastructure including water supply systems, fire fighting systems, and HVAC controls across multiple metro stations.",
-        tenderValue: "₹62,00,000",
-        estimatedValue: "₹58,00,000 - ₹68,00,000",
-        publishDate: "Jan 26, 2026",
-        submissionDeadline: "Feb 18, 2026",
-        openingDate: "Feb 19, 2026",
-        location: "Delhi NCR",
-        matchScore: 90,
-        category: "Industrial Valves",
-        sector: "Metro Infrastructure",
-        
-        eligibilityCriteria: [
-          { criteria: "Valid GST Registration", met: true },
-          { criteria: "CE marking on valves for safety compliance", met: true },
-          { criteria: "Minimum 3 years experience in metro/subway projects", met: false },
-          { criteria: "ISO 9001 and ISO 14001 certification", met: true },
-          { criteria: "Turnover of minimum ₹2.5 Crore in last FY", met: true },
-        ],
-        
-        requiredDocuments: [
-          "Company Registration Certificate",
-          "GST Registration Certificate",
-          "CE Marking Certificates",
-          "ISO 9001 & ISO 14001 Certificates",
-          "Financial Statements (Last 3 Years)",
-          "Metro Project Experience (if any)",
-          "Product Catalogues and Technical Specifications",
-        ],
-        
-        scopeOfWork: [
-          "Supply of 7500+ pneumatic and hydraulic valves",
-          "Valves suitable for working pressure up to 16 bar",
-          "Installation at 12 metro stations",
-          "Commissioning and performance testing",
-          "3-year comprehensive warranty and AMC",
-        ],
-        
-        summary: "DMRC requires high-quality pneumatic and hydraulic valves for water supply, fire protection, and HVAC systems across 12 metro stations. All valves must be CE marked and meet international safety standards. The scope includes supply, installation, testing, and 3-year maintenance. Payment terms: 30% advance, 40% on delivery, 20% after installation, 10% after warranty period. Minimum turnover requirement is ₹2.5 Crore. Metro project experience is preferred but not mandatory.",
-        
-        contactInfo: {
-          officer: "General Manager (Civil)",
-          department: "DMRC - Phase IV Projects",
-          email: "gm.civil@delhimetrorail.com",
-          phone: "+91-11-2341-2345",
-        }
-      },
-      "5": {
-        id: "5",
-        title: "Electrical Components - MSEB",
-        organization: "Maharashtra State Electricity Board",
-        description: "Supply of electrical components including circuit breakers, transformers, and distribution equipment for power distribution network upgrades across Maharashtra.",
-        tenderValue: "₹28,00,000",
-        estimatedValue: "₹25,00,000 - ₹30,00,000",
-        publishDate: "Jan 20, 2026",
-        submissionDeadline: "Feb 8, 2026",
-        openingDate: "Feb 9, 2026",
-        location: "Mumbai, Maharashtra",
-        matchScore: 78,
-        category: "Electrical Components",
-        sector: "Power Distribution",
-        
-        eligibilityCriteria: [
-          { criteria: "Valid GST Registration", met: true },
-          { criteria: "BIS certification for electrical products", met: false },
-          { criteria: "Minimum 5 years experience in power sector", met: true },
-          { criteria: "Previous MSEB supply experience", met: false },
-          { criteria: "Turnover of minimum ₹1 Crore in last FY", met: true },
-        ],
-        
-        requiredDocuments: [
-          "Company Registration Certificate",
-          "GST Registration Certificate",
-          "BIS Certification (IS 13947)",
-          "Type Test Certificates",
-          "Financial Statements (Last 3 Years)",
-          "Power Sector Experience Certificates",
-          "Manufacturing Facility Inspection Report",
-        ],
-        
-        scopeOfWork: [
-          "Supply of 3000+ electrical components",
-          "Circuit breakers rated 11kV and 33kV",
-          "Distribution transformers (100kVA to 500kVA)",
-          "Installation and commissioning support",
-          "2-year warranty on all equipment",
-        ],
-        
-        summary: "Note: This tender has expired. MSEB required electrical components for network upgrades including circuit breakers and transformers. All equipment needed BIS certification per IS 13947. Payment was structured as 20% advance, 60% on delivery, 20% post-commissioning. The tender closed on Feb 8, 2026.",
-        
-        contactInfo: {
-          officer: "Superintending Engineer",
-          department: "MSEB - Distribution Circle Mumbai",
-          email: "se.distribution@mahadiscom.in",
-          phone: "+91-22-2345-6789",
-        }
-      },
+    const defaultData = {
+      id: "1",
+      title: "Industrial Valves Supply - Karnataka PWD",
+      organization: "Bharat Heavy Electrical Limited (BHEL)",
+      tenderValue: "₹45,00,000",
+      submissionDeadline: "Feb 15, 2026",
+      publishDate: "Jan 28, 2026",
+      openingDate: "Feb 16, 2026",
+      quantity: "500",
+      hsnCode: "85019000",
+      matchScore: 90,
+      summary: "This tender involves the supply and installation of over 500 industrial valves for Karnataka's water distribution infrastructure. The project requires IS 14846:2000 compliant valves with cast iron or ductile iron bodies, suitable for PN 10/16 working pressure. The scope includes delivery, on-site installation, quality testing, and a 1-year warranty period. Payment will be structured in four phases: 30% advance, 40% on delivery, 20% post-installation, and 10% after warranty completion. Suppliers must demonstrate minimum 3 years of experience, hold valid GST registration, and show a turnover of at least ₹1 Crore in the previous fiscal year. ISO 9001:2015 certification is preferred. The successful bidder will also provide operational training to PWD staff.",
+      risks: [
+        "Strict penalty clause for delayed delivery (1% per week).",
+        "Requires specific IS 14846:2000 certification which takes time to procure if not already held.",
+        "Price variation clause is not applicable; fixed price contract."
+      ],
+      scopeOfWork: [
+        "Supply of 500+ industrial valves (various sizes: 2\", 4\", 6\", 8\")",
+        "Installation and commissioning at designated sites",
+        "Testing and quality certification",
+        "1-year warranty and maintenance support",
+        "Training for PWD staff on valve operation",
+      ],
+      evaluationCriteria: [
+        "Technical Evaluation (Pass/Fail based on IS certification)",
+        "Financial Evaluation (L1 Selection)",
+        "Minimum 3 years past experience verification",
+        "Financial turnover capacity (Min ₹1 Crore)"
+      ],
+      requiredDocuments: [
+        { name: "Company Registration Certificate", type: "pdf" },
+        { name: "GST Registration Certificate", type: "pdf" },
+        { name: "PAN Card", type: "pdf" },
+        { name: "ISO Certification (if available)", type: "pdf" },
+        { name: "Financial Statements (Last 3 Years)", type: "pdf" },
+      ]
     };
 
-    return tenderDatabase[id || "1"] || tenderDatabase["1"];
+    const tenderDatabase: { [key: string]: typeof defaultData } = {
+      "1": defaultData,
+      // ... Add more if necessary, defaulting to 1 for this demo
+    };
+
+    return tenderDatabase[id || "1"] || defaultData;
   };
 
   const tender = getTenderData(tenderId);
 
-  const metCriteria = tender.eligibilityCriteria.filter(c => c.met).length;
-  const totalCriteria = tender.eligibilityCriteria.length;
-
-  // Calculate actual met criteria including uploaded documents
-  const actualMetCriteria = metCriteria + Object.values(uploadedCriteria).filter(Boolean).length;
-
-  // Function to download document list
-  const handleDownloadDocumentList = () => {
-    const content = `REQUIRED DOCUMENTS CHECKLIST
-Tender Reference: TND-${tenderId}
-Tender: ${tender.title}
-Organization: ${tender.organization}
-Submission Deadline: ${tender.submissionDeadline}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-DOCUMENT CHECKLIST:
-
-${tender.requiredDocuments.map((doc, index) => `${index + 1}. ${doc}`).join('\n')}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━��━━━━━━━
-
-IMPORTANT INFORMATION:
-
-Tender Value: ${tender.tenderValue}
-Estimated Value: ${tender.estimatedValue}
-Location: ${tender.location}
-Category: ${tender.category}
-
-Bid Opening Date: ${tender.openingDate}
-Published Date: ${tender.publishDate}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-CONTACT INFORMATION:
-
-Contact Officer: ${tender.contactInfo.officer}
-Department: ${tender.contactInfo.department}
-Email: ${tender.contactInfo.email}
-Phone: ${tender.contactInfo.phone}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Generated by OpportunityX - Qistonpe
-Date: ${new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-`;
-
-    // Create blob and download
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `TND-${tenderId}_Required_Documents.txt`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  };
-
-  // Function to download document list as PDF
-  const handleDownloadDocumentListPDF = () => {
-    const doc = new jsPDF();
-    const currentDate = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
-    
-    let yPosition = 20;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const marginLeft = 20;
-    const marginRight = 20;
-    const contentWidth = pageWidth - marginLeft - marginRight;
-
-    // Header - Company Name
-    doc.setFontSize(16);
-    doc.setFont(undefined, 'bold');
-    doc.text('OpportunityX - Qistonpe', pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += 10;
-
-    // Title
-    doc.setFontSize(14);
-    doc.text('REQUIRED DOCUMENTS CHECKLIST', pageWidth / 2, yPosition, { align: 'center' });
-    yPosition += 12;
-
-    // Horizontal line
-    doc.setLineWidth(0.5);
-    doc.line(marginLeft, yPosition, pageWidth - marginRight, yPosition);
-    yPosition += 10;
-
-    // Tender Information Section
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'bold');
-    doc.text('TENDER INFORMATION', marginLeft, yPosition);
-    yPosition += 7;
-
-    doc.setFont(undefined, 'normal');
-    doc.setFontSize(9);
-    
-    doc.text(`Reference ID: TND-${tenderId}`, marginLeft, yPosition);
-    yPosition += 5;
-    
-    const titleLines = doc.splitTextToSize(`Tender Title: ${tender.title}`, contentWidth);
-    doc.text(titleLines, marginLeft, yPosition);
-    yPosition += titleLines.length * 5;
-    
-    const orgLines = doc.splitTextToSize(`Organization: ${tender.organization}`, contentWidth);
-    doc.text(orgLines, marginLeft, yPosition);
-    yPosition += orgLines.length * 5;
-    
-    doc.text(`Submission Deadline: ${tender.submissionDeadline}`, marginLeft, yPosition);
-    yPosition += 10;
-
-    // Horizontal line
-    doc.setLineWidth(0.5);
-    doc.line(marginLeft, yPosition, pageWidth - marginRight, yPosition);
-    yPosition += 10;
-
-    // Document Checklist Section
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'bold');
-    doc.text('DOCUMENT CHECKLIST', marginLeft, yPosition);
-    yPosition += 8;
-
-    doc.setFont(undefined, 'normal');
-    doc.setFontSize(9);
-
-    tender.requiredDocuments.forEach((doc_item, index) => {
-      if (yPosition > 270) {
-        doc.addPage();
-        yPosition = 20;
-      }
-      
-      // Checkbox
-      doc.rect(marginLeft, yPosition - 3, 3, 3);
-      
-      // Document text
-      const docLines = doc.splitTextToSize(`${index + 1}. ${doc_item}`, contentWidth - 10);
-      doc.text(docLines, marginLeft + 6, yPosition);
-      yPosition += Math.max(docLines.length * 5, 7);
-    });
-
-    yPosition += 5;
-
-    // Check if we need a new page for the next section
-    if (yPosition > 200) {
-      doc.addPage();
-      yPosition = 20;
-    }
-
-    // Horizontal line
-    doc.setLineWidth(0.5);
-    doc.line(marginLeft, yPosition, pageWidth - marginRight, yPosition);
-    yPosition += 10;
-
-    // Important Information Section
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'bold');
-    doc.text('TENDER DETAILS', marginLeft, yPosition);
-    yPosition += 8;
-
-    doc.setFont(undefined, 'normal');
-    doc.setFontSize(9);
-
-    doc.text(`Tender Value: ${tender.tenderValue}`, marginLeft, yPosition);
-    yPosition += 5;
-    doc.text(`Estimated Value: ${tender.estimatedValue}`, marginLeft, yPosition);
-    yPosition += 5;
-    doc.text(`Location: ${tender.location}`, marginLeft, yPosition);
-    yPosition += 5;
-    doc.text(`Category: ${tender.category}`, marginLeft, yPosition);
-    yPosition += 5;
-    doc.text(`Published Date: ${tender.publishDate}`, marginLeft, yPosition);
-    yPosition += 5;
-    doc.text(`Bid Opening Date: ${tender.openingDate}`, marginLeft, yPosition);
-    yPosition += 10;
-
-    // Horizontal line
-    doc.setLineWidth(0.5);
-    doc.line(marginLeft, yPosition, pageWidth - marginRight, yPosition);
-    yPosition += 10;
-
-    // Contact Information Section
-    doc.setFontSize(10);
-    doc.setFont(undefined, 'bold');
-    doc.text('CONTACT INFORMATION', marginLeft, yPosition);
-    yPosition += 8;
-
-    doc.setFont(undefined, 'normal');
-    doc.setFontSize(9);
-
-    doc.text(`Contact Officer: ${tender.contactInfo.officer}`, marginLeft, yPosition);
-    yPosition += 5;
-    
-    const deptLines = doc.splitTextToSize(`Department: ${tender.contactInfo.department}`, contentWidth);
-    doc.text(deptLines, marginLeft, yPosition);
-    yPosition += deptLines.length * 5;
-    
-    doc.text(`Email: ${tender.contactInfo.email}`, marginLeft, yPosition);
-    yPosition += 5;
-    doc.text(`Phone: ${tender.contactInfo.phone}`, marginLeft, yPosition);
-    yPosition += 15;
-
-    // Footer
-    doc.setLineWidth(0.5);
-    doc.line(marginLeft, yPosition, pageWidth - marginRight, yPosition);
-    yPosition += 7;
-
-    doc.setFontSize(8);
-    doc.setFont(undefined, 'italic');
-    doc.text(`Generated on: ${currentDate}`, marginLeft, yPosition);
-    doc.text('OpportunityX by Qistonpe', pageWidth - marginRight, yPosition, { align: 'right' });
-
-    // Save the PDF
-    doc.save(`TND-${tenderId}_Required_Documents.pdf`);
-  };
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50">
+    <div className="min-h-screen bg-[#F8FAFC]">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-50 shadow-sm">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate("/tenders")}
+              onClick={() => navigate(`/analysis1/${tenderId}`)}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
+              <ArrowLeft className="w-5 h-5 text-gray-500" />
             </button>
             <div>
-              <h1 className="text-xl bg-gradient-to-r from-indigo-600 to-blue-600 bg-clip-text text-transparent">
+              <h1 className="text-lg font-semibold text-[#4F46E5]">
                 Tender Details
               </h1>
-              <p className="text-sm text-gray-600">Reference ID: TND-{tenderId}</p>
+              <p className="text-xs text-gray-400 font-medium tracking-wide uppercase">
+                TENDER/BID ID: {tender.id.startsWith("GEM") ? tender.id : `TND-${tender.id}`}
+              </p>
             </div>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <Bookmark className="w-5 h-5 text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-              <Share2 className="w-5 h-5 text-gray-600" />
-            </button>
           </div>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-7xl mx-auto p-6 mt-4">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Main Details */}
+
+          {/* Left Column - Main Details & Accordions */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Tender Header */}
+
+            {/* Top Grid Card (Copied from Analysis1 for consistency) */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8"
             >
-              <div className="flex items-start gap-4 mb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <Building2 className="w-8 h-8 text-white" />
+              {/* Tender Header */}
+              <div className="flex items-center gap-5 mb-8">
+                <div className="w-14 h-14 bg-[#3B82F6] rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <Building2 className="w-7 h-7 text-white" />
                 </div>
-                <div className="flex-1">
-                  <h2 className="text-2xl text-gray-900 mb-2">{tender.title}</h2>
-                  <p className="text-gray-600 flex items-center gap-2">
-                    <Building2 className="w-4 h-4" />
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-1">{tender.title}</h2>
+                  <p className="text-sm font-medium text-[#3B82F6]">
                     {tender.organization}
                   </p>
                 </div>
               </div>
 
-              {/* Match Score Banner */}
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-xl p-4 mb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center">
-                      <Sparkles className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-green-700 mb-1">AI Match Score</p>
-                      <p className="text-2xl text-green-900">{tender.matchScore}% Match</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm text-green-700">Highly Recommended</p>
-                    <p className="text-xs text-green-600">Based on your profile</p>
-                  </div>
+              {/* Data Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-6 bg-[#FAFAFF] rounded-[20px] border border-[#EEF2FF]">
+                  <p className="text-[11px] font-bold text-gray-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
+                    <span className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-serif text-[10px]">$</span>
+                    TENDER VALUE
+                  </p>
+                  <p className="text-[28px] font-bold text-[#4F46E5]">{tender.tenderValue}</p>
+                </div>
+
+                <div className="p-6 bg-[#FFF9F5] rounded-[20px] border border-[#FFF0E5]">
+                  <p className="text-[11px] font-bold text-gray-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    BID END DATE
+                  </p>
+                  <p className="text-[28px] font-bold text-[#F97316] mb-1">{tender.submissionDeadline}</p>
+                  <p className="text-[11px] text-[#F97316] font-medium">18 days remaining</p>
+                </div>
+
+                <div className="p-6 bg-[#F8FAFC] rounded-[20px] border border-gray-100">
+                  <p className="text-[11px] font-bold text-gray-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    PUBLISHED DATE
+                  </p>
+                  <p className="text-[15px] font-bold text-gray-900">{tender.publishDate}</p>
+                </div>
+
+                <div className="p-6 bg-[#F8FAFC] rounded-[20px] border border-gray-100">
+                  <p className="text-[11px] font-bold text-gray-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    BID OPENING
+                  </p>
+                  <p className="text-[15px] font-bold text-gray-900">{tender.openingDate}</p>
+                </div>
+
+                <div className="p-6 bg-[#F8FAFC] rounded-[20px] border border-gray-100">
+                  <p className="text-[11px] font-bold text-gray-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                    QUANTITY
+                  </p>
+                  <p className="text-[15px] font-bold text-gray-900">{tender.quantity}</p>
+                </div>
+
+                <div className="p-6 bg-[#F8FAFC] rounded-[20px] border border-gray-100">
+                  <p className="text-[11px] font-bold text-gray-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" />
+                    </svg>
+                    HSN CODE
+                  </p>
+                  <p className="text-[15px] font-bold text-gray-900">{tender.hsnCode}</p>
                 </div>
               </div>
-
-              <p className="text-gray-700 leading-relaxed">{tender.description}</p>
             </motion.div>
 
-            {/* AI Generated Summary */}
+            {/* Accordion List Container */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+              className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
             >
-              <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="w-5 h-5 text-purple-600" />
-                <span className="text-xs px-3 py-1 bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700 rounded-full border border-purple-200">
-                  AI Generated Summary
-                </span>
+              {/* Accordion 1: Tender Summary */}
+              <div className="border-b border-gray-100 last:border-0">
+                <button
+                  onClick={() => toggleSection("summary")}
+                  className="w-full flex items-center justify-between p-6 bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex flex-col items-start gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F3E8FF] text-[#9333EA] text-[11px] font-semibold border border-[#E9D5FF]">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      AI Generated Summary
+                    </span>
+                    <div className="flex items-center gap-2 text-lg font-bold text-gray-900">
+                      <FileText className="w-5 h-5 text-gray-400" />
+                      Tender Summary
+                    </div>
+                  </div>
+                  {openSections.summary ? (
+                    <ChevronUp className="w-5 h-5 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                  )}
+                </button>
+                <AnimatePresence>
+                  {openSections.summary && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-6 pb-6 pt-2">
+                        <p className="text-[15px] leading-relaxed text-gray-600">
+                          {tender.summary}
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-              
-              <h3 className="text-xl mb-4 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-indigo-600" />
-                Tender Summary
-              </h3>
-              
-              <div className="prose prose-sm max-w-none">
-                <p className="text-gray-700 leading-relaxed">
-                  {tender.summary}
-                </p>
+
+              {/* Accordion 2: Risks */}
+              <div className="border-b border-gray-100 last:border-0">
+                <button
+                  onClick={() => toggleSection("risks")}
+                  className="w-full flex items-center justify-between p-6 bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-2 text-lg font-bold text-gray-900">
+                    <ShieldAlert className="w-5 h-5 text-gray-400" />
+                    Risks
+                  </div>
+                  {openSections.risks ? (
+                    <ChevronUp className="w-5 h-5 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                  )}
+                </button>
+                <AnimatePresence>
+                  {openSections.risks && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden bg-gray-50"
+                    >
+                      <div className="px-6 pb-6 pt-2">
+                        <ul className="space-y-3">
+                          {tender.risks.map((risk, i) => (
+                            <li key={i} className="flex gap-3 text-[15px] text-gray-700">
+                              <span className="text-red-500 font-bold">•</span>
+                              {risk}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-            </motion.div>
 
-            {/* Scope of Work */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
-            >
-              <h3 className="text-xl mb-4 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-indigo-600" />
-                Scope of Work
-              </h3>
-              
-              <ul className="space-y-2">
-                {tender.scopeOfWork.map((item, index) => (
-                  <li key={index} className="flex items-start gap-3 text-gray-700">
-                    <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
+              {/* Accordion 3: Scope of Work */}
+              <div className="border-b border-gray-100 last:border-0">
+                <button
+                  onClick={() => toggleSection("scope")}
+                  className="w-full flex items-center justify-between p-6 bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-2 text-lg font-bold text-gray-900">
+                    <ListChecks className="w-5 h-5 text-gray-400" />
+                    Scope of Work
+                  </div>
+                  {openSections.scope ? (
+                    <ChevronUp className="w-5 h-5 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                  )}
+                </button>
+                <AnimatePresence>
+                  {openSections.scope && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-6 pb-6 pt-2">
+                        <ul className="space-y-3">
+                          {tender.scopeOfWork.map((item, i) => (
+                            <li key={i} className="flex gap-3 text-[15px] text-gray-700">
+                              <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
-            {/* Key Information */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
-            >
-              <h3 className="text-xl mb-4">Key Information</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-xl border border-indigo-100">
-                  <p className="text-sm text-gray-600 mb-1 flex items-center gap-2">
-                    <IndianRupee className="w-4 h-4" />
-                    Tender Value
-                  </p>
-                  <p className="text-xl text-indigo-600">{tender.tenderValue}</p>
-                  <p className="text-xs text-gray-500 mt-1">Est: {tender.estimatedValue}</p>
-                </div>
+              {/* Accordion 4: Evaluation Criteria */}
+              <div className="border-b border-gray-100 last:border-0">
+                <button
+                  onClick={() => toggleSection("evaluation")}
+                  className="w-full flex items-center justify-between p-6 bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-2 text-lg font-bold text-gray-900">
+                    <Award className="w-5 h-5 text-gray-400" />
+                    Evaluation Criteria
+                  </div>
+                  {openSections.evaluation ? (
+                    <ChevronUp className="w-5 h-5 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                  )}
+                </button>
+                <AnimatePresence>
+                  {openSections.evaluation && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-6 pb-6 pt-2">
+                        <ol className="list-decimal list-inside space-y-2 text-[15px] text-gray-700">
+                          {tender.evaluationCriteria.map((item, i) => (
+                            <li key={i}>{item}</li>
+                          ))}
+                        </ol>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
-                <div className="p-4 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-100">
-                  <p className="text-sm text-gray-600 mb-1 flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    Submission Deadline
-                  </p>
-                  <p className="text-xl text-amber-600">{tender.submissionDeadline}</p>
-                  <p className="text-xs text-gray-500 mt-1">18 days remaining</p>
-                </div>
-
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                  <p className="text-sm text-gray-600 mb-1 flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    Published Date
-                  </p>
-                  <p className="text-gray-900">{tender.publishDate}</p>
-                </div>
-
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                  <p className="text-sm text-gray-600 mb-1 flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
-                    Bid Opening
-                  </p>
-                  <p className="text-gray-900">{tender.openingDate}</p>
-                </div>
-
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                  <p className="text-sm text-gray-600 mb-1 flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    Location
-                  </p>
-                  <p className="text-gray-900">{tender.location}</p>
-                </div>
-
-                <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                  <p className="text-sm text-gray-600 mb-1 flex items-center gap-2">
-                    <Award className="w-4 h-4" />
-                    Category
-                  </p>
-                  <p className="text-gray-900">{tender.category}</p>
-                </div>
+              {/* Accordion 5: Required Document */}
+              <div className="border-b border-gray-100 last:border-0">
+                <button
+                  onClick={() => toggleSection("documents")}
+                  className="w-full flex items-center justify-between p-6 bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-2 text-lg font-bold text-gray-900">
+                    <FileText className="w-5 h-5 text-gray-400" />
+                    Required Document
+                  </div>
+                  {openSections.documents ? (
+                    <ChevronUp className="w-5 h-5 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                  )}
+                </button>
+                <AnimatePresence>
+                  {openSections.documents && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="px-6 pb-6 pt-2">
+                        <ul className="space-y-3">
+                          {tender.requiredDocuments.map((doc, i) => (
+                            <li key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                              <span className="text-[14px] text-gray-700 font-medium flex items-center gap-2">
+                                <FileText className="w-4 h-4 text-gray-400" />
+                                {doc.name}
+                              </span>
+                              <span className="text-[11px] uppercase font-bold text-gray-400 bg-white px-2 py-1 rounded border border-gray-200">
+                                {doc.type}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           </div>
 
-          {/* Right Column - Eligibility & Actions */}
-          <div className="space-y-6">
-            {/* Eligibility Check */}
+          {/* Right Column - Actions Sidebar */}
+          <div className="lg:col-span-1 space-y-4">
+
+            {/* 1. Analysis Results Block */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+              className="bg-white rounded-xl border border-gray-100 p-4 flex items-center justify-between"
             >
-              <h3 className="text-lg mb-4">Quick Eligibility Check</h3>
-              
-              <div className="mb-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-green-700">Criteria Met</span>
-                  <span className="text-lg text-green-900">{actualMetCriteria}/{totalCriteria}</span>
-                </div>
-                <div className="w-full bg-green-200 rounded-full h-2">
-                  <div 
-                    className="bg-green-600 h-2 rounded-full transition-all"
-                    style={{ width: `${(actualMetCriteria / totalCriteria) * 100}%` }}
-                  />
-                </div>
+              <div>
+                <p className="text-[11px] font-bold text-gray-400 mb-3 uppercase tracking-wider">Analysis Successful</p>
+                <button
+                  onClick={() => navigate(`/eligibility/${tenderId}`)}
+                  className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold px-4 py-2 rounded-lg transition-colors border border-emerald-200"
+                >
+                  View Eligibility
+                </button>
               </div>
-
-              <div className="space-y-2 mb-6">
-                {tender.eligibilityCriteria.map((item, index) => {
-                  // Check if uploaded or already met
-                  const isMet = item.met || uploadedCriteria[item.criteria];
-                  
-                  return (
-                    <div
-                      key={index}
-                      className={`flex items-center gap-2 p-3 rounded-lg transition-all ${
-                        isMet ? "bg-green-50 border border-green-200" : "bg-amber-50 border border-amber-200"
-                      }`}
-                    >
-                      {isMet ? (
-                        <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                      )}
-                      <span className={`text-sm flex-1 ${isMet ? "text-green-800" : "text-amber-800"}`}>
-                        {item.criteria}
-                      </span>
-                      
-                      {/* Upload button for all unmet criteria */}
-                      {!isMet && (
-                        <button
-                          onClick={() => handleDocumentUpload(item.criteria)}
-                          className="ml-auto px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs flex items-center gap-1.5 transition-colors"
-                        >
-                          <Upload className="w-3 h-3" />
-                          Upload
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
+              <div className="flex flex-col items-center justify-center">
+                <div className="w-12 h-12 rounded-full border-[3px] border-emerald-500 flex items-center justify-center mb-1 bg-emerald-50">
+                  <span className="text-emerald-700 font-bold text-base">{tender.matchScore}%</span>
+                </div>
+                <span className="bg-emerald-100 text-emerald-700 text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                  Eligible
+                </span>
               </div>
-
-              {/* Analyze Button */}
-              <button
-                onClick={() => navigate(`/eligibility/${tenderId}`)}
-                className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-6 py-4 rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl flex items-center justify-center gap-2 mb-3"
-              >
-                <Sparkles className="w-5 h-5" />
-                <span className="text-lg">Start AI Analysis</span>
-              </button>
-
-              <p className="text-xs text-center text-gray-500">
-                Get detailed eligibility analysis and auto-generate bid documents
-              </p>
             </motion.div>
 
-            {/* Required Documents */}
+            {/* 2. Download Tender Report Button */}
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              onClick={handleDownloadReport}
+              className="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 font-semibold px-4 py-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-colors text-[14px]"
+            >
+              <Download className="w-4 h-4 text-[#3B82F6]" />
+              Download Tender Report
+            </motion.button>
+
+            {/* 3. Bid Document Preparation */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+              className="bg-white rounded-xl border border-gray-100 p-4 text-center"
             >
-              <h3 className="text-lg mb-4 flex items-center gap-2">
-                <FileText className="w-5 h-5 text-indigo-600" />
-                Required Documents
-              </h3>
-              
-              <div className="space-y-2">
-                {tender.requiredDocuments.map((doc, index) => (
-                  <div
-                    key={index}
-                    className="flex items-start gap-2 p-2 text-sm text-gray-700"
-                  >
-                    <div className="w-1.5 h-1.5 bg-indigo-600 rounded-full flex-shrink-0 mt-2" />
-                    <span>{doc}</span>
+              <p className="text-[11px] font-bold text-gray-400 mb-3 text-left uppercase tracking-wider">Bid Document Preparation</p>
+              <button
+                onClick={() => navigate(`/bid-preparation/${tenderId}`)}
+                className="w-full bg-[#4F46E5] hover:bg-indigo-700 text-white font-semibold px-4 py-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all text-[14px] mb-2"
+              >
+                <Sparkles className="w-4 h-4 text-indigo-200" />
+                Generate Bid Document(s)
+              </button>
+              <p className="text-[10px] text-gray-400 font-medium">
+                Start preparing bid documents for your bid submission
+              </p>
+            </motion.div>
+
+            {/* 4. Download Bid Document(s) */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.25 }}
+              className="bg-[#EFF6FF] rounded-xl border border-blue-100 p-4"
+            >
+              <p className="text-[11px] font-bold text-blue-400 mb-3 uppercase tracking-wider">Download Bid Document(s)</p>
+              <button
+                className="w-full bg-white hover:bg-gray-50 text-gray-900 font-bold px-4 py-3 rounded-xl text-center shadow transition-all text-[14px] mb-4"
+              >
+                Download All
+              </button>
+
+              <div className="space-y-4">
+                {[1, 2, 3].map((num) => (
+                  <div key={num} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-3 h-3 text-blue-500" />
+                      <span className="text-[13px] font-medium text-blue-900">Document {num}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <button className="w-7 h-7 rounded-full bg-white text-blue-600 flex items-center justify-center hover:bg-blue-50 transition-colors shadow-sm">
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                      <button className="w-7 h-7 rounded-full bg-white text-blue-600 flex items-center justify-center hover:bg-blue-50 transition-colors shadow-sm">
+                        <Download className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
-
-              <button
-                onClick={handleDownloadDocumentListPDF}
-                className="w-full mt-4 bg-white text-indigo-600 px-4 py-2 rounded-lg hover:bg-indigo-50 transition-all border border-indigo-200 flex items-center justify-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                <span>Download Document List</span>
-              </button>
             </motion.div>
 
-            {/* Timeline */}
+            {/* 5. Opportunity X AI Chatbot */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+              className="bg-white rounded-xl border border-gray-200 overflow-hidden flex flex-col h-[300px]"
             >
-              <h3 className="text-lg mb-4 flex items-center gap-2">
-                <Clock className="w-5 h-5 text-indigo-600" />
-                Important Dates
-              </h3>
-              
-              <div className="space-y-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-green-600 rounded-full mt-2" />
-                  <div>
-                    <p className="text-sm text-gray-900">Published</p>
-                    <p className="text-xs text-gray-500">{tender.publishDate}</p>
+              {/* Header */}
+              <div className="bg-[#4F46E5] text-white p-3 font-semibold text-center text-[14px]">
+                Opportunity X AI
+              </div>
+
+              {/* Chat Area */}
+              <div className="flex-1 p-4 bg-white overflow-y-auto">
+                <div className="flex gap-3 mb-4">
+                  <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center shrink-0 border border-indigo-100">
+                    <Bot className="w-4 h-4 text-[#4F46E5]" />
                   </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-amber-600 rounded-full mt-2" />
-                  <div>
-                    <p className="text-sm text-gray-900">Submission Deadline</p>
-                    <p className="text-xs text-gray-500">{tender.submissionDeadline}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-indigo-600 rounded-full mt-2" />
-                  <div>
-                    <p className="text-sm text-gray-900">Bid Opening</p>
-                    <p className="text-xs text-gray-500">{tender.openingDate}</p>
+                  <div className="bg-gray-50 border text-[13px] border-gray-200 rounded-2xl rounded-tl-none p-3 shadow-sm text-gray-800">
+                    Hey! How can I help you?<br />
+                    Ask me anything related to this tender.
                   </div>
                 </div>
               </div>
+
+              {/* Input Area */}
+              <div className="p-4 bg-white border-t border-gray-100">
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      placeholder="Type a message..."
+                      className="w-full border border-blue-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <button className="p-2 text-gray-500 hover:text-blue-600 transition-colors shrink-0">
+                    <Send className="w-5 h-5" />
+                  </button>
+                  <button className="p-2 text-gray-500 hover:text-blue-600 transition-colors shrink-0">
+                    <Paperclip className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
             </motion.div>
+
           </div>
         </div>
       </div>

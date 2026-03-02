@@ -308,329 +308,319 @@ export function TenderListing() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto p-6">
-        {/* Search and Filter Bar */}
-        <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-100">
-          {/* Search */}
-          <div className="relative mb-4">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by category, buyer, or tender number..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            />
+        {/* Layout: Sidebar + Main Content */}
+        <div className="flex flex-col lg:flex-row gap-6">
+
+          {/* Sidebar */}
+          <div className="w-full lg:w-64 flex-shrink-0">
+            <div className="bg-white rounded-2xl shadow-sm p-5 sticky top-24 border border-gray-100">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-lg font-semibold text-gray-900">Filters</h2>
+                <button
+                  onClick={() => {
+                    setSelectedStatus("all");
+                    setSelectedMinistry("all");
+                    setSelectedBuyer("all");
+                  }}
+                  className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                >
+                  Clear All
+                </button>
+              </div>
+
+              {/* Filters */}
+              <div className="space-y-6">
+                {/* Status Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">Status</label>
+                  <div className="space-y-3">
+                    {[
+                      { id: "all", label: "All" },
+                      { id: "past-24hrs", label: "New" },
+                      { id: "active", label: "Active" },
+                      { id: "closing-soon", label: "Closing Soon" },
+                      { id: "expired", label: "Expired" }
+                    ].map((status) => (
+                      <label key={status.id} className="flex items-center gap-3 cursor-pointer group">
+                        <div className="relative flex items-center justify-center w-4 h-4">
+                          <input
+                            type="radio"
+                            name="status"
+                            value={status.id}
+                            checked={selectedStatus === status.id}
+                            onChange={(e) => setSelectedStatus(e.target.value)}
+                            className="peer appearance-none w-4 h-4 border border-gray-300 rounded-full checked:border-indigo-600 checked:border-[4px] transition-all cursor-pointer"
+                          />
+                        </div>
+                        <span className={`text-sm ${selectedStatus === status.id ? 'text-gray-900 font-medium' : 'text-gray-600 group-hover:text-gray-900'} transition-colors`}>
+                          {status.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Daily Summary Button - Only show when Past 24 Hours is selected */}
+                {selectedStatus === "past-24hrs" && (
+                  <div>
+                    <button
+                      onClick={() => setShowDailySummary(!showDailySummary)}
+                      className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-xl hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md flex items-center gap-2"
+                    >
+                      <BarChart3 className="w-4 h-4" />
+                      {showDailySummary ? "Hide" : "Show"} Daily Summary
+                    </button>
+                  </div>
+                )}
+
+                {/* Ministry Filter */}
+                <div>
+                  <label className="block text-sm text-gray-700 mb-2">Filter by Ministry</label>
+                  <div className="relative">
+                    <select
+                      value={selectedMinistry}
+                      onChange={(e) => setSelectedMinistry(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none pr-10"
+                    >
+                      <option value="all">All Ministries</option>
+                      {ministries.filter(m => m !== "all").map(ministry => (
+                        <option key={ministry} value={ministry}>{ministry}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Buyer Filter */}
+                <div>
+                  <label className="block text-sm text-gray-700 mb-2">Filter by Buyer</label>
+                  <div className="relative">
+                    <select
+                      value={selectedBuyer}
+                      onChange={(e) => setSelectedBuyer(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none pr-10"
+                    >
+                      <option value="all">All Buyers</option>
+                      {buyers.filter(b => b !== "all").map(buyer => (
+                        <option key={buyer} value={buyer}>{buyer}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                {/* Sort Filter */}
+                <div>
+                  <label className="block text-sm text-gray-700 mb-2">Sort By</label>
+                  <div className="relative">
+                    <select
+                      value={sortOption}
+                      onChange={(e) => setSortOption(e.target.value)}
+                      className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none pr-10"
+                    >
+                      <option value="posted-date-desc">Newest First</option>
+                      <option value="submission-date-asc">Submission Deadline (Soonest)</option>
+                      <option value="ministry-asc">Ministry Name (A-Z)</option>
+                      <option value="buyer-asc">Buyer Name (A-Z)</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Filter Toggle */}
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 mb-4"
-          >
-            <Filter className="w-4 h-4" />
-            <span className="text-sm">{showFilters ? "Hide Filters" : "Show Filters"}</span>
-          </button>
+          {/* Main Content Area */}
+          <div className="flex-1 w-full relative">
 
-          {/* Filters */}
-          {showFilters && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              className="space-y-4"
-            >
-              {/* Status Filter */}
-              <div>
-                <label className="block text-sm text-gray-700 mb-2">Filter by Date</label>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => {
-                      setSelectedStatus("all");
-                      setShowDailySummary(false);
-                    }}
-                    className={`px-4 py-2 rounded-xl transition-all ${selectedStatus === "all"
-                      ? "bg-indigo-500 text-white shadow-md"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                  >
-                    All Tenders
-                  </button>
-                  <button
-                    onClick={() => {
-                      setSelectedStatus("past-24hrs");
-                      setShowDailySummary(false);
-                    }}
-                    className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${selectedStatus === "past-24hrs"
-                      ? "bg-green-500 text-white shadow-md"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                  >
-                    <Zap className="w-4 h-4" />
-                    Past 24 Hours
-                  </button>
-                  <button
-                    onClick={() => setSelectedStatus("active")}
-                    className={`px-4 py-2 rounded-xl transition-all ${selectedStatus === "active"
-                      ? "bg-blue-500 text-white shadow-md"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                  >
-                    Active
-                  </button>
-                  <button
-                    onClick={() => setSelectedStatus("closing-soon")}
-                    className={`px-4 py-2 rounded-xl transition-all ${selectedStatus === "closing-soon"
-                      ? "bg-amber-500 text-white shadow-md"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                  >
-                    Closing Soon
-                  </button>
-                  <button
-                    onClick={() => setSelectedStatus("expired")}
-                    className={`px-4 py-2 rounded-xl transition-all ${selectedStatus === "expired"
-                      ? "bg-gray-500 text-white shadow-md"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
-                  >
-                    Expired
-                  </button>
-                </div>
+            {/* Search Bar & Result Count */}
+            <div className="mb-6 sticky top-24 z-40 bg-indigo-50/90 backdrop-blur-md pt-2 pb-2 -mt-2">
+              <div className="relative mb-4">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search tenders by buyer, organization, or category..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm shadow-sm"
+                />
               </div>
-
-              {/* Daily Summary Button - Only show when Past 24 Hours is selected */}
-              {selectedStatus === "past-24hrs" && (
-                <div>
-                  <button
-                    onClick={() => setShowDailySummary(!showDailySummary)}
-                    className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-blue-500 text-white rounded-xl hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md flex items-center gap-2"
-                  >
-                    <BarChart3 className="w-4 h-4" />
-                    {showDailySummary ? "Hide" : "Show"} Daily Summary
-                  </button>
+              <p className="text-sm text-gray-600">Showing <span className="text-indigo-600 font-medium">{filteredTenders.length}</span> tenders</p>
+            </div>
+            {showDailySummary && selectedStatus === "past-24hrs" && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-gradient-to-r from-indigo-500 to-blue-500 rounded-2xl shadow-2xl p-8 mb-6 text-white relative overflow-hidden"
+              >
+                <div className="absolute inset-0 opacity-10">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full transform translate-x-32 -translate-y-32" />
+                  <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full transform -translate-x-24 translate-y-24" />
                 </div>
+
+                <div className="relative z-10">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                      <BarChart3 className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl">Daily Summary</h2>
+                      <p className="text-blue-100 text-sm">Past 24 hours insights</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    {/* New Tenders */}
+                    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 border border-white border-opacity-20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <FileText className="w-5 h-5 text-blue-100" />
+                        <p className="text-blue-100 text-sm">Past 24 Hours</p>
+                      </div>
+                      <p className="text-4xl">{past24HoursTenders.length}</p>
+                      <p className="text-xs text-blue-100 mt-1">Posted today</p>
+                    </div>
+
+                    {/* Total Value */}
+                    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 border border-white border-opacity-20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <IndianRupee className="w-5 h-5 text-blue-100" />
+                        <p className="text-blue-100 text-sm">Total Value</p>
+                      </div>
+                      <p className="text-4xl">₹{(totalValue24hrs / 100000).toFixed(1)}L</p>
+                      <p className="text-xs text-blue-100 mt-1">Combined worth</p>
+                    </div>
+
+                    {/* Average Match */}
+                    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 border border-white border-opacity-20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <TrendingUp className="w-5 h-5 text-blue-100" />
+                        <p className="text-blue-100 text-sm">Avg Match</p>
+                      </div>
+                      <p className="text-4xl">{avgMatchPercentage.toFixed(0)}%</p>
+                      <p className="text-xs text-blue-100 mt-1">Your compatibility</p>
+                    </div>
+
+                    {/* Top Ministry */}
+                    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 border border-white border-opacity-20">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Building2 className="w-5 h-5 text-blue-100" />
+                        <p className="text-blue-100 text-sm">Top Ministry</p>
+                      </div>
+                      <p className="text-lg leading-tight">{mostActiveMinistry.replace("Ministry of ", "")}</p>
+                      <p className="text-xs text-blue-100 mt-1">Most active</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Tender Cards */}
+            <div className="space-y-6">
+              {filteredTenders.length === 0 ? (
+                <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-100">
+                  <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-xl text-gray-600 mb-2">No tenders found</p>
+                  <p className="text-gray-500">Try adjusting your filters or search query</p>
+                </div>
+              ) : (
+                filteredTenders.map((tender, index) => {
+                  const statusConfig = getStatusConfig(tender.status);
+                  return (
+                    <motion.div
+                      key={tender.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-gray-100"
+                    >
+                      <div className="flex items-start gap-4">
+                        {/* Icon */}
+                        <div className="bg-indigo-500 rounded-lg p-3 flex-shrink-0 mt-1">
+                          <Building2 className="w-6 h-6 text-white" />
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 w-full">
+                          {/* Top Bar: Tender # and Badge */}
+                          <div className="flex items-start justify-between mb-2">
+                            <div>
+                              <span className="text-xs font-semibold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-md mb-2 inline-block">
+                                {tender.tenderNumber}
+                              </span>
+                              <h3 className="text-lg font-bold text-gray-900 leading-tight">{tender.buyerName}</h3>
+                              <p className="text-sm text-gray-500 mt-1">{tender.organization}</p>
+                            </div>
+                            <span className={`px-4 py-1.5 ${statusConfig.bg} ${statusConfig.text} text-xs font-medium rounded-full border ${statusConfig.border} whitespace-nowrap`}>
+                              {statusConfig.label}
+                            </span>
+                          </div>
+
+                          {/* Middle Data Grid */}
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-6 pb-6 border-b border-gray-100">
+                            <div>
+                              <p className="text-xs text-gray-500 mb-1">Category</p>
+                              <p className="text-sm font-semibold text-gray-900 truncate pr-4" title={tender.category}>{tender.category}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500 mb-1">Quantity</p>
+                              <p className="text-sm font-semibold text-gray-900">{tender.quantity}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500 mb-1">Tender Value</p>
+                              <div className="flex items-center gap-1 font-semibold text-gray-900">
+                                <IndianRupee className="w-3.5 h-3.5" />
+                                <p className="text-sm">{tender.tenderValue}</p>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-xs text-gray-500 mb-1">Submission Date</p>
+                              <div className="flex items-center gap-1 font-semibold text-gray-900">
+                                <Calendar className="w-3.5 h-3.5" />
+                                <p className="text-sm">{tender.submissionDate}</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Bottom Bar: Status Text and Button */}
+                          <div className="flex items-center justify-between mt-4">
+                            <div className="flex items-center gap-2">
+                              {tender.status === 'closing-soon' ? (
+                                <>
+                                  <Clock className="w-4 h-4 text-amber-500" />
+                                  <span className="text-sm font-medium text-amber-500">Closing in 2-3 days</span>
+                                </>
+                              ) : tender.status === 'active' ? (
+                                <>
+                                  <TrendingUp className="w-4 h-4 text-blue-500" />
+                                  <span className="text-sm font-medium text-blue-500">Open for bidding</span>
+                                </>
+                              ) : tender.status === 'past-24hrs' ? (
+                                <>
+                                  <TrendingUp className="w-4 h-4 text-green-500" />
+                                  <span className="text-sm font-medium text-green-500">Not yet open for bidding</span>
+                                </>
+                              ) : (
+                                <>
+                                  <AlertCircle className="w-4 h-4 text-gray-500" />
+                                  <span className="text-sm font-medium text-gray-500">Bidding closed</span>
+                                </>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => navigate(`/analysis1/${tender.id}`)}
+                              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-all font-medium text-sm shadow-sm hover:shadow"
+                            >
+                              View Details
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })
               )}
-
-              {/* Ministry Filter */}
-              <div>
-                <label className="block text-sm text-gray-700 mb-2">Filter by Ministry</label>
-                <div className="relative">
-                  <select
-                    value={selectedMinistry}
-                    onChange={(e) => setSelectedMinistry(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none pr-10"
-                  >
-                    <option value="all">All Ministries</option>
-                    {ministries.filter(m => m !== "all").map(ministry => (
-                      <option key={ministry} value={ministry}>{ministry}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Buyer Filter */}
-              <div>
-                <label className="block text-sm text-gray-700 mb-2">Filter by Buyer</label>
-                <div className="relative">
-                  <select
-                    value={selectedBuyer}
-                    onChange={(e) => setSelectedBuyer(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none pr-10"
-                  >
-                    <option value="all">All Buyers</option>
-                    {buyers.filter(b => b !== "all").map(buyer => (
-                      <option key={buyer} value={buyer}>{buyer}</option>
-                    ))}
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
-
-              {/* Sort Filter */}
-              <div>
-                <label className="block text-sm text-gray-700 mb-2">Sort By</label>
-                <div className="relative">
-                  <select
-                    value={sortOption}
-                    onChange={(e) => setSortOption(e.target.value)}
-                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none pr-10"
-                  >
-                    <option value="posted-date-desc">Newest First</option>
-                    <option value="submission-date-asc">Submission Deadline (Soonest)</option>
-                    <option value="ministry-asc">Ministry Name (A-Z)</option>
-                    <option value="buyer-asc">Buyer Name (A-Z)</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </div>
-
-        {/* Daily Summary Section */}
-        {showDailySummary && selectedStatus === "past-24hrs" && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-indigo-500 to-blue-500 rounded-2xl shadow-2xl p-8 mb-6 text-white relative overflow-hidden"
-          >
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full transform translate-x-32 -translate-y-32" />
-              <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full transform -translate-x-24 translate-y-24" />
             </div>
-
-            <div className="relative z-10">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                  <BarChart3 className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-2xl">Daily Summary</h2>
-                  <p className="text-blue-100 text-sm">Past 24 hours insights</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                {/* New Tenders */}
-                <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 border border-white border-opacity-20">
-                  <div className="flex items-center gap-2 mb-2">
-                    <FileText className="w-5 h-5 text-blue-100" />
-                    <p className="text-blue-100 text-sm">Past 24 Hours</p>
-                  </div>
-                  <p className="text-4xl">{past24HoursTenders.length}</p>
-                  <p className="text-xs text-blue-100 mt-1">Posted today</p>
-                </div>
-
-                {/* Total Value */}
-                <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 border border-white border-opacity-20">
-                  <div className="flex items-center gap-2 mb-2">
-                    <IndianRupee className="w-5 h-5 text-blue-100" />
-                    <p className="text-blue-100 text-sm">Total Value</p>
-                  </div>
-                  <p className="text-4xl">₹{(totalValue24hrs / 100000).toFixed(1)}L</p>
-                  <p className="text-xs text-blue-100 mt-1">Combined worth</p>
-                </div>
-
-                {/* Average Match */}
-                <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 border border-white border-opacity-20">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-5 h-5 text-blue-100" />
-                    <p className="text-blue-100 text-sm">Avg Match</p>
-                  </div>
-                  <p className="text-4xl">{avgMatchPercentage.toFixed(0)}%</p>
-                  <p className="text-xs text-blue-100 mt-1">Your compatibility</p>
-                </div>
-
-                {/* Top Ministry */}
-                <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 border border-white border-opacity-20">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Building2 className="w-5 h-5 text-blue-100" />
-                    <p className="text-blue-100 text-sm">Top Ministry</p>
-                  </div>
-                  <p className="text-lg leading-tight">{mostActiveMinistry.replace("Ministry of ", "")}</p>
-                  <p className="text-xs text-blue-100 mt-1">Most active</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Tender Cards */}
-        <div className="space-y-6">
-          {filteredTenders.length === 0 ? (
-            <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-100">
-              <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <p className="text-xl text-gray-600 mb-2">No tenders found</p>
-              <p className="text-gray-500">Try adjusting your filters or search query</p>
-            </div>
-          ) : (
-            filteredTenders.map((tender, index) => {
-              const statusConfig = getStatusConfig(tender.status);
-              return (
-                <motion.div
-                  key={tender.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.05 }}
-                  className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all p-6 border border-gray-100"
-                >
-                  {/* Header */}
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className={`px-3 py-1 ${statusConfig.bg} ${statusConfig.text} text-xs rounded-full border ${statusConfig.border}`}>
-                          {statusConfig.label}
-                        </span>
-                        {tender.status === "past-24hrs" && (
-                          <span className="text-xs text-gray-500 flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {tender.timeAgo}
-                          </span>
-                        )}
-                        <span className="text-xs text-gray-500 font-mono">{tender.tenderNumber}</span>
-                      </div>
-                      <h3 className="text-xl mb-2">{tender.category}</h3>
-                      <div className="flex items-center gap-2 text-gray-600">
-                        <Building2 className="w-4 h-4" />
-                        <span className="text-sm">{tender.buyerName}</span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-1 justify-end mb-1">
-                        <TrendingUp className="w-4 h-4 text-green-600" />
-                        <span className="text-sm text-green-600">{tender.matchPercentage}% Match</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Details Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Contract Value</p>
-                      <div className="flex items-center gap-1">
-                        <IndianRupee className="w-4 h-4 text-gray-700" />
-                        <p className="text-sm">{tender.tenderValue}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Quantity</p>
-                      <p className="text-sm">{tender.quantity}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Location</p>
-                      <div className="flex items-center gap-1">
-                        <MapPin className="w-4 h-4 text-gray-700" />
-                        <p className="text-sm">{tender.location}</p>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">Submission Date</p>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4 text-gray-700" />
-                        <p className="text-sm">{tender.submissionDate}</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Ministry */}
-                  <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-3 mb-4">
-                    <div className="flex items-center gap-2">
-                      <Building2 className="w-4 h-4 text-indigo-600" />
-                      <span className="text-sm text-indigo-700">{tender.ministry}</span>
-                    </div>
-                  </div>
-
-                  {/* Action Button */}
-                  <button
-                    onClick={() => alert("Coming Soon!")}
-                    className="w-full bg-gradient-to-r from-indigo-500 to-blue-500 text-white px-6 py-3 rounded-xl hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
-                  >
-                    <span>Check Eligibility</span>
-                  </button>
-                </motion.div>
-              );
-            })
-          )}
+          </div>
         </div>
       </div>
     </div>
