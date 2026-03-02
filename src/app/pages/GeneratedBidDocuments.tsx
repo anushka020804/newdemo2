@@ -196,7 +196,10 @@ export function GeneratedBidDocuments() {
                                 <button className="flex-1 py-3 rounded-[16px] border-2 border-[#4F46E5] text-[#4F46E5] font-bold text-[15px] hover:bg-indigo-50 transition-colors">
                                     Generate More Bid Document(s)
                                 </button>
-                                <button className="flex-1 py-3 rounded-[16px] bg-[#4F46E5] text-white font-bold text-[15px] hover:bg-[#4338ca] transition-colors shadow-sm">
+                                <button
+                                    onClick={() => navigate(`/tender/${tenderId}/final-document-editor`)}
+                                    className="flex-1 py-3 rounded-[16px] bg-[#4F46E5] text-white font-bold text-[15px] hover:bg-[#4338ca] transition-colors shadow-sm"
+                                >
                                     Prepare Final Bid Document
                                 </button>
                             </div>

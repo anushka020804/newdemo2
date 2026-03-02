@@ -20,6 +20,7 @@ import { TenderDetails } from "./pages/TenderDetails";
 import { Analysis1 } from "./pages/Analysis1";
 import { BidDocumentPreparation } from "./pages/BidDocumentPreparation";
 import { GeneratedBidDocuments } from "./pages/GeneratedBidDocuments";
+import { FinalDocumentEditor } from "./pages/FinalDocumentEditor";
 import { ProtectedRoute, PublicOnlyRoute } from "./components/RouteGuards";
 
 export const router = createBrowserRouter([
@@ -51,6 +52,7 @@ export const router = createBrowserRouter([
       { path: "/analysis1/:id", Component: Analysis1 },
       { path: "/bid-preparation/:id", Component: BidDocumentPreparation },
       { path: "/tender/:id/generated-documents", Component: GeneratedBidDocuments },
+      { path: "/tender/:id/final-document-editor", Component: FinalDocumentEditor },
       { path: "/saved-bids", Component: SavedBids },
       { path: "/won-bids", Component: WonBids },
       { path: "/profile", Component: UserProfile },
