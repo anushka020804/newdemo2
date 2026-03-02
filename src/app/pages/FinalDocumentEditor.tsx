@@ -207,7 +207,10 @@ export function FinalDocumentEditor() {
                                 >
                                     Back
                                 </button>
-                                <button className="px-8 py-3 rounded-[16px] bg-[#4F46E5] text-white font-bold text-[15px] hover:bg-[#4338ca] transition-colors shadow-sm w-1/2">
+                                <button
+                                    onClick={() => navigate(`/tender/${tenderId}/final-bid-sequence`)}
+                                    className="px-8 py-3 rounded-[16px] bg-[#4F46E5] text-white font-bold text-[15px] hover:bg-[#4338ca] transition-colors shadow-sm w-1/2"
+                                >
                                     Save
                                 </button>
                             </div>
