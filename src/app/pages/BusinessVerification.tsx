@@ -121,10 +121,11 @@ export function BusinessVerification() {
           const hsnData = await hsnRes.json();
 
           let fetchedHsn: any[] = [];
-          if (hsnData?.data?.hsnDetails?.services) {
-            fetchedHsn = hsnData.data.hsnDetails.services;
-          } else if (hsnData?.data?.hsnDetails?.goods) {
-            fetchedHsn = hsnData.data.hsnDetails.goods;
+          if (Array.isArray(hsnData?.data?.hsnDetails?.services)) {
+            fetchedHsn = fetchedHsn.concat(hsnData.data.hsnDetails.services);
+          }
+          if (Array.isArray(hsnData?.data?.hsnDetails?.goods)) {
+            fetchedHsn = fetchedHsn.concat(hsnData.data.hsnDetails.goods);
           }
 
           if (fetchedHsn.length > 0) {
