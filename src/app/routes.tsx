@@ -8,7 +8,6 @@ import { HSNSetup } from "./pages/HSNSetup";
 import { WelcomeScreen } from "./pages/WelcomeScreen";
 import { MarketingLandingPage } from "./pages/MarketingLandingPage";
 import AboutPage from "./pages/AboutPage";
-// import OpportunityXLanding from "./pages/OpportunityXLanding";
 import MetalCapitalLanding from "./pages/MetalCapitalLanding";
 import { PortalPage } from "./pages/PortalPage";
 import { SignupPage } from "./pages/SignupPage";
@@ -18,76 +17,45 @@ import { WonBids } from "./pages/WonBids";
 import { UserProfile } from "./pages/UserProfile";
 import { CompleteProfile } from "./pages/CompleteProfile";
 import { TenderDetails } from "./pages/TenderDetails";
+import { Analysis1 } from "./pages/Analysis1";
+import { BidDocumentPreparation } from "./pages/BidDocumentPreparation";
+import { ProtectedRoute, PublicOnlyRoute } from "./components/RouteGuards";
 
 export const router = createBrowserRouter([
-      {
-        path: "/about",
-        Component: AboutPage,
-      },
-    // OpportunityX route removed; handled by root '/'.
-    {
-      path: "/metalcapital",
-      Component: MetalCapitalLanding,
-    },
+  // ─── Fully public pages (anyone can access) ─────────────────────────────
+  { path: "/", Component: MarketingLandingPage },
+  { path: "/about", Component: AboutPage },
+  { path: "/metalcapital", Component: MetalCapitalLanding },
+  { path: "/portal", Component: PortalPage },
+
+  // ─── Public-only pages (redirect to /dashboard if already logged in) ────
   {
-    path: "/",
-    Component: MarketingLandingPage,
+    Component: PublicOnlyRoute,
+    children: [
+      { path: "/login", Component: LoginPage },
+      { path: "/signup", Component: SignupPage },
+      { path: "/verify-business", Component: BusinessVerification },
+      { path: "/hsn-setup", Component: HSNSetup },
+      { path: "/welcome", Component: WelcomeScreen },
+    ],
   },
+
+  // ─── Protected pages (redirect to /login if not logged in) ──────────────
   {
-    path: "/signup",
-    Component: SignupPage,
+    Component: ProtectedRoute,
+    children: [
+      { path: "/dashboard", Component: Dashboard },
+      { path: "/tenders", Component: TenderListing },
+      { path: "/tender/:id", Component: TenderDetails },
+      { path: "/analysis1/:id", Component: Analysis1 },
+      { path: "/bid-preparation/:id", Component: BidDocumentPreparation },
+      { path: "/saved-bids", Component: SavedBids },
+      { path: "/won-bids", Component: WonBids },
+      { path: "/profile", Component: UserProfile },
+      { path: "/complete-profile", Component: CompleteProfile },
+    ],
   },
-  {
-    path: "/portal",
-    Component: PortalPage,
-  },
-  {
-    path: "/login",
-    Component: LoginPage,
-  },
-  {
-    path: "/verify-business",
-    Component: BusinessVerification,
-  },
-  {
-    path: "/hsn-setup",
-    Component: HSNSetup,
-  },
-  {
-    path: "/welcome",
-    Component: WelcomeScreen,
-  },
-  {
-    path: "/dashboard",
-    Component: Dashboard,
-  },
-  {
-    path: "/tenders",
-    Component: TenderListing,
-  },
-  {
-    path: "/saved-bids",
-    Component: SavedBids,
-  },
-  {
-    path: "/won-bids",
-    Component: WonBids,
-  },
-  {
-    path: "/profile",
-    Component: UserProfile,
-  },
-  {
-    path: "/complete-profile",
-    Component: CompleteProfile,
-  },
-  {
-    path: "/tender/:id",
-    Component: TenderDetails,
-  },
-  {
-    path: "/app",
-    Component: App,
-    children: [],
-  },
+
+  // ─── Legacy app shell ───────────────────────────────────────────────────
+  { path: "/app", Component: App, children: [] },
 ]);

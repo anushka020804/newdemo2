@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { ArrowRight, Sparkles, Phone, User, Mail } from "lucide-react";
+import { signupStep1 } from "../api/auth";
 
 export function SignupPage() {
     const navigate = useNavigate();
@@ -11,15 +12,32 @@ export function SignupPage() {
         email: "",
     });
 
+    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(false);
+
     const isFormValid =
         formData.name.trim() !== "" &&
         formData.phone.trim().length >= 10 &&
         formData.email.trim() !== "" &&
         formData.email.includes("@");
 
-    const handleContinue = () => {
-        if (isFormValid) {
+    const handleContinue = async () => {
+        if (!isFormValid) return;
+
+        setIsLoading(true);
+        setError(null);
+        try {
+            await signupStep1({
+                fullName: formData.name,
+                email: formData.email,
+                phoneNumber: formData.phone
+            });
             navigate("/verify-business", { state: { ...formData } });
+        } catch (err: any) {
+            const msg = err.response?.data?.message || err.message || 'Failed to start signup';
+            setError(Array.isArray(msg) ? msg.join(', ') : msg);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -49,6 +67,12 @@ export function SignupPage() {
                     transition={{ duration: 0.6, delay: 0.2 }}
                     className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100"
                 >
+                    {error && (
+                        <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">
+                            {error}
+                        </div>
+                    )}
+
                     <div className="space-y-5">
                         {/* Name Field */}
                         <div>
@@ -86,32 +110,38 @@ export function SignupPage() {
                             </div>
                         </div>
 
-                                {/* Email Field */}
-                                <div>
-                                    <label className="block text-sm text-gray-700 mb-2" htmlFor="email">
-                                        Email Address <span className="text-red-500">*</span>
-                                    </label>
-                                    <div className="relative">
-                                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                        <input
-                                            className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                                            id="email"
-                                            type="email"
-                                            placeholder="name@company.com"
-                                            value={formData.email}
-                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
+                        {/* Email Field */}
+                        <div>
+                            <label className="block text-sm text-gray-700 mb-2" htmlFor="email">
+                                Email Address <span className="text-red-500">*</span>
+                            </label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input
+                                    className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                                    id="email"
+                                    type="email"
+                                    placeholder="name@company.com"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                />
+                            </div>
+                        </div>
 
                         {/* Continue Button */}
                         <button
                             onClick={handleContinue}
-                            disabled={!isFormValid}
+                            disabled={!isFormValid || isLoading}
                             className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-6 py-3.5 rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all duration-300 flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed shadow-md hover:shadow-lg mt-4"
                         >
-                            <span>Continue</span>
-                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                            {isLoading ? (
+                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            ) : (
+                                <>
+                                    <span>Continue</span>
+                                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                </>
+                            )}
                         </button>
                     </div>
 

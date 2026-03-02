@@ -11,12 +11,22 @@ import {
   Eye,
   AlertCircle,
   CheckCircle2,
-  Clock
+  Clock,
+  LogOut
 } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { useLogout } from "../hooks/useLogout";
 
 
 export function Dashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const handleLogout = useLogout();
+
+  // User initials for avatar
+  const initials = user?.fullName
+    ? user.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : 'U';
 
   // Welcome message
   const welcomeTitle = "Welcome Back !!";
@@ -172,9 +182,17 @@ export function Dashboard() {
             </nav>
           </div>
 
-          <div className="flex items-center gap-3 shrink-0 ml-4 cursor-pointer" onClick={() => navigate("/profile")}>
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-blue-500 rounded-full flex items-center justify-center hover:shadow-lg transition-all">
-              <span className="text-white">AS</span>
+          <div className="flex items-center gap-3 shrink-0 ml-4">
+            <button
+              onClick={handleLogout}
+              title="Logout"
+              className="flex items-center gap-1.5 text-sm text-red-500 hover:text-red-600 border border-red-200 px-3 py-1.5 rounded-lg transition-all hover:bg-red-50"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Logout</span>
+            </button>
+            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-blue-500 rounded-full flex items-center justify-center hover:shadow-lg transition-all cursor-pointer" onClick={() => navigate("/profile")}>
+              <span className="text-white text-sm font-semibold">{initials}</span>
             </div>
           </div>
         </div>

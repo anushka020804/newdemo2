@@ -2,25 +2,34 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowRight, Sparkles, Mail, Check } from "lucide-react";
+import { sendOtp, verifyOtp } from "../api/auth";
+import { useAuth } from "../context/AuthContext";
 
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [showOTP, setShowOTP] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSendOTP = () => {
+  const handleSendOTP = async () => {
     if (!email.trim() || !email.includes("@")) return;
 
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
+    setError(null);
+    try {
+      await sendOtp({ email });
       setShowOTP(true);
-    }, 800);
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'Failed to send OTP';
+      setError(Array.isArray(msg) ? msg.join(', ') : msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleOTPChange = (index: number, value: string) => {
@@ -44,22 +53,26 @@ export function LoginPage() {
     }
   };
 
-  const handleVerifyOTP = () => {
+  const handleVerifyOTP = async () => {
     const otpCode = otp.join("");
     if (otpCode.length !== 6) return;
 
     setVerifying(true);
-    // Simulate verification
-    setTimeout(() => {
-      setVerifying(false);
-      // If navigated here from HSN setup, continue to welcome screen
-      const from = (location.state as any)?.from;
-      if (from === "hsn") {
-        navigate("/welcome");
-      } else {
-        navigate("/hsn-setup");
+    setError(null);
+    try {
+      const data = await verifyOtp({ email, otp: otpCode });
+      // Save user + token to AuthContext (which also persists to localStorage)
+      if (data.user && data.accessToken) {
+        login(data.user, data.accessToken);
       }
-    }, 1000);
+      const from = (location.state as any)?.from;
+      navigate(from === "hsn" ? "/welcome" : "/dashboard", { replace: true });
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message || 'Invalid OTP';
+      setError(Array.isArray(msg) ? msg.join(', ') : msg);
+    } finally {
+      setVerifying(false);
+    }
   };
 
   return (
@@ -89,6 +102,12 @@ export function LoginPage() {
           className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100"
         >
           <h2 className="text-2xl mb-6 text-gray-900">Welcome Back</h2>
+
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">
+              {error}
+            </div>
+          )}
 
           {/* Email Input */}
           <div className="mb-6">
