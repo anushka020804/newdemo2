@@ -31,6 +31,11 @@ export function FinalDocumentEditor() {
         organization: "Karnataka Public Works Department",
     };
 
+    // Text formatting handler
+    const handleFormat = (command: string, value: string = '') => {
+        document.execCommand(command, false, value);
+    };
+
     return (
         <div className="min-h-screen bg-[#F8FAFC]">
             {/* Header */}
@@ -98,69 +103,78 @@ export function FinalDocumentEditor() {
                             <div className="bg-white border-b border-gray-200 px-4 py-3 flex flex-wrap items-center gap-2 text-gray-600">
                                 {/* Font controls */}
                                 <div className="flex items-center gap-2 border-r border-gray-200 pr-3">
-                                    <select className="bg-gray-50 border border-gray-200 rounded-md text-sm px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer text-gray-700 font-medium">
-                                        <option>Aptos (Body)</option>
-                                        <option>Arial</option>
-                                        <option>Times New Roman</option>
-                                        <option>Inter</option>
+                                    <select
+                                        onChange={(e) => handleFormat('fontName', e.target.value)}
+                                        className="bg-gray-50 border border-gray-200 rounded-md text-sm px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer text-gray-700 font-medium"
+                                    >
+                                        <option value="Arial">Arial</option>
+                                        <option value="Times New Roman">Times New Roman</option>
+                                        <option value="Inter">Inter</option>
                                     </select>
-                                    <select className="bg-gray-50 border border-gray-200 rounded-md text-sm px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer text-gray-700 font-medium">
-                                        <option>12</option>
-                                        <option>14</option>
-                                        <option>16</option>
-                                        <option>18</option>
+                                    <select
+                                        onChange={(e) => handleFormat('fontSize', e.target.value)}
+                                        className="bg-gray-50 border border-gray-200 rounded-md text-sm px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer text-gray-700 font-medium"
+                                    >
+                                        <option value="3">12</option>
+                                        <option value="4">14</option>
+                                        <option value="5">18</option>
+                                        <option value="6">24</option>
                                     </select>
                                 </div>
 
                                 {/* Text Formatting */}
                                 <div className="flex items-center gap-1 border-r border-gray-200 pr-3">
-                                    <button className="p-1.5 hover:bg-gray-100 rounded text-gray-700 transition-colors tooltip-trigger" title="Bold">
+                                    <button onClick={() => handleFormat('bold')} className="p-1.5 hover:bg-gray-200 rounded text-gray-700 transition-colors tooltip-trigger" title="Bold">
                                         <Bold className="w-4 h-4" />
                                     </button>
-                                    <button className="p-1.5 hover:bg-gray-100 rounded text-gray-700 transition-colors tooltip-trigger" title="Italic">
+                                    <button onClick={() => handleFormat('italic')} className="p-1.5 hover:bg-gray-200 rounded text-gray-700 transition-colors tooltip-trigger" title="Italic">
                                         <Italic className="w-4 h-4" />
                                     </button>
-                                    <button className="p-1.5 hover:bg-gray-100 rounded text-gray-700 transition-colors tooltip-trigger" title="Underline">
+                                    <button onClick={() => handleFormat('underline')} className="p-1.5 hover:bg-gray-200 rounded text-gray-700 transition-colors tooltip-trigger" title="Underline">
                                         <Underline className="w-4 h-4" />
                                     </button>
-                                    <button className="p-1.5 hover:bg-gray-100 rounded text-gray-700 transition-colors tooltip-trigger" title="Strikethrough">
+                                    <button onClick={() => handleFormat('strikeThrough')} className="p-1.5 hover:bg-gray-200 rounded text-gray-700 transition-colors tooltip-trigger" title="Strikethrough">
                                         <Strikethrough className="w-4 h-4" />
                                     </button>
                                 </div>
 
                                 {/* Text Colors */}
-                                <div className="flex items-center gap-1 border-r border-gray-200 pr-3">
-                                    <button className="p-1.5 hover:bg-gray-100 rounded flex flex-col items-center gap-[2px] tooltip-trigger" title="Text Color">
+                                <div className="flex items-center gap-1 border-r border-gray-200 pr-3 relative group">
+                                    <button
+                                        onClick={() => handleFormat('foreColor', '#EF4444')}
+                                        className="p-1.5 hover:bg-gray-200 rounded flex flex-col items-center gap-[2px] tooltip-trigger"
+                                        title="Red Text"
+                                    >
                                         <Type className="w-[14px] h-[14px] text-gray-700" strokeWidth={3} />
                                         <div className="w-3 h-0.5 bg-red-500 rounded-full"></div>
                                     </button>
-                                    <button className="p-1.5 hover:bg-gray-100 rounded text-gray-700 transition-colors tooltip-trigger" title="Highlight">
+                                    <button onClick={() => handleFormat('hiliteColor', '#FEF08A')} className="p-1.5 hover:bg-gray-200 rounded text-gray-700 transition-colors tooltip-trigger" title="Highlight Yellow">
                                         <Highlighter className="w-4 h-4" />
                                     </button>
                                 </div>
 
                                 {/* Lists */}
                                 <div className="flex items-center gap-1 border-r border-gray-200 pr-3">
-                                    <button className="p-1.5 hover:bg-gray-100 rounded text-gray-700 transition-colors tooltip-trigger" title="Bulleted List">
+                                    <button onClick={() => handleFormat('insertUnorderedList')} className="p-1.5 hover:bg-gray-200 rounded text-gray-700 transition-colors tooltip-trigger" title="Bulleted List">
                                         <List className="w-4 h-4" />
                                     </button>
-                                    <button className="p-1.5 hover:bg-gray-100 rounded text-gray-700 transition-colors tooltip-trigger" title="Numbered List">
+                                    <button onClick={() => handleFormat('insertOrderedList')} className="p-1.5 hover:bg-gray-200 rounded text-gray-700 transition-colors tooltip-trigger" title="Numbered List">
                                         <ListOrdered className="w-4 h-4" />
                                     </button>
                                 </div>
 
                                 {/* Alignment */}
                                 <div className="flex items-center gap-1">
-                                    <button className="p-1.5 bg-blue-50 text-blue-600 rounded transition-colors tooltip-trigger" title="Align Left">
+                                    <button onClick={() => handleFormat('justifyLeft')} className="p-1.5 hover:bg-gray-200 rounded text-gray-700 transition-colors tooltip-trigger" title="Align Left">
                                         <AlignLeft className="w-4 h-4" />
                                     </button>
-                                    <button className="p-1.5 hover:bg-gray-100 rounded text-gray-700 transition-colors tooltip-trigger" title="Align Center">
+                                    <button onClick={() => handleFormat('justifyCenter')} className="p-1.5 hover:bg-gray-200 rounded text-gray-700 transition-colors tooltip-trigger" title="Align Center">
                                         <AlignCenter className="w-4 h-4" />
                                     </button>
-                                    <button className="p-1.5 hover:bg-gray-100 rounded text-gray-700 transition-colors tooltip-trigger" title="Align Right">
+                                    <button onClick={() => handleFormat('justifyRight')} className="p-1.5 hover:bg-gray-200 rounded text-gray-700 transition-colors tooltip-trigger" title="Align Right">
                                         <AlignRight className="w-4 h-4" />
                                     </button>
-                                    <button className="p-1.5 hover:bg-gray-100 rounded text-gray-700 transition-colors tooltip-trigger" title="Justify">
+                                    <button onClick={() => handleFormat('justifyFull')} className="p-1.5 hover:bg-gray-200 rounded text-gray-700 transition-colors tooltip-trigger" title="Justify">
                                         <AlignJustify className="w-4 h-4" />
                                     </button>
                                 </div>
