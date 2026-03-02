@@ -112,7 +112,7 @@ export function BusinessVerification() {
               method: "POST",
               headers,
               body: JSON.stringify({
-                gstin: gstNumber,
+                gstNumber: gstNumber,
                 hsnDetails: true,
                 consent: "Y",
               }),
