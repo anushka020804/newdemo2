@@ -275,12 +275,6 @@ export function FinalBidSequence() {
                             <div className="flex items-center gap-3">
                                 <button
                                     onClick={() => setViewingDoc(null)}
-                                    className="px-5 py-2.5 text-sm font-bold text-white bg-[#4F46E5] rounded-xl hover:bg-[#4338ca] transition-colors shadow-sm flex items-center gap-2"
-                                >
-                                    Return to Sequence
-                                </button>
-                                <button
-                                    onClick={() => setViewingDoc(null)}
                                     className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
                                     title="Close Preview"
                                 >
