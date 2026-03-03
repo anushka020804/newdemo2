@@ -10,7 +10,8 @@ import {
     GripVertical,
     FileArchive,
     Trash2,
-    Eye
+    Eye,
+    X
 } from "lucide-react";
 
 interface SequencedDocument {
@@ -258,50 +259,78 @@ export function FinalBidSequence() {
 
             {/* View Document Modal Overlay */}
             {viewingDoc && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-6 overflow-y-auto custom-scrollbar">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6 lg:p-8">
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl my-8 flex flex-col overflow-hidden"
+                        className="bg-gray-100 rounded-2xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden relative"
                     >
                         {/* Modal Header */}
-                        <div className="bg-gray-50 border-b border-gray-200 px-6 py-4 flex items-center justify-between sticky top-0 z-10">
+                        <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between shrink-0">
                             <div>
-                                <h3 className="text-xl font-bold text-gray-900">{viewingDoc.name}</h3>
+                                <h3 className="text-xl font-bold text-gray-900 line-clamp-1">{viewingDoc.name}</h3>
                                 <p className="text-sm text-gray-500">Document #{viewingDoc.order} • {viewingDoc.size}</p>
                             </div>
-                            <button
-                                onClick={() => setViewingDoc(null)}
-                                className="px-4 py-2 text-sm font-bold text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
-                            >
-                                Close Preview
-                            </button>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={() => setViewingDoc(null)}
+                                    className="px-5 py-2.5 text-sm font-bold text-white bg-[#4F46E5] rounded-xl hover:bg-[#4338ca] transition-colors shadow-sm flex items-center gap-2"
+                                >
+                                    Return to Sequence
+                                </button>
+                                <button
+                                    onClick={() => setViewingDoc(null)}
+                                    className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors"
+                                    title="Close Preview"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
 
                         {/* Document Content Mock Canvas (A4 Aspect Ratio) */}
-                        <div className="bg-gray-200 p-8 flex-1 overflow-y-auto">
-                            <div className="bg-white max-w-[800px] min-h-[1000px] mx-auto shadow-md p-12 text-gray-800">
-                                <div className="border-b-2 border-gray-800 pb-6 mb-8 text-center">
-                                    <h1 className="text-3xl font-black uppercase tracking-wider mb-2">
-                                        {viewingDoc.name}
-                                    </h1>
-                                    <h2 className="text-xl text-gray-600 font-medium">Karnataka Public Works Department</h2>
+                        <div className="p-8 flex-1 overflow-y-auto custom-scrollbar">
+                            <div className="bg-white max-w-[800px] min-h-[1050px] mx-auto shadow-sm border border-gray-300 p-12 text-gray-800 relative">
+
+                                {/* Official Tender Header */}
+                                <div className="border-b-2 border-gray-800 pb-6 mb-8 text-center flex flex-col items-center">
+                                    <img
+                                        src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/55/Emblem_of_India.svg/200px-Emblem_of_India.svg.png"
+                                        alt="Emblem"
+                                        className="h-16 mb-4 opacity-80 mix-blend-multiply"
+                                    />
+                                    <h2 className="text-2xl font-bold uppercase tracking-widest text-gray-900">Government of Karnataka</h2>
+                                    <h3 className="text-lg text-gray-700 font-semibold mb-1">Public Works Department (PWD)</h3>
+                                    <p className="text-sm text-gray-500 font-medium">Official Bid Document Submission Form</p>
                                 </div>
 
-                                <div className="space-y-6 text-[15px] leading-relaxed">
-                                    <p>
-                                        <strong>Date:</strong> {new Date().toLocaleDateString()}
-                                    </p>
-                                    <p>
-                                        <strong>Reference ID:</strong> TND-{tender.id}
-                                    </p>
-                                    <div className="h-px bg-gray-200 my-6"></div>
+                                <div className="space-y-6 text-[15px] leading-relaxed relative z-10">
+
+                                    {/* Tender Meta Info Box */}
+                                    <div className="flex justify-between items-start mb-8 bg-gray-50 border border-gray-200 p-4 rounded-lg">
+                                        <div>
+                                            <p className="font-bold text-gray-900 text-lg mb-1">
+                                                Tender Ref: TND-{tender.id}
+                                            </p>
+                                            <p className="text-gray-700 font-semibold text-sm">Project: {tender.title}</p>
+                                        </div>
+                                        <div className="text-right text-sm">
+                                            <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
+                                            <p><strong>Document ID:</strong> DOC-{viewingDoc.id}-2025</p>
+                                        </div>
+                                    </div>
+
+                                    <h1 className="text-xl font-black uppercase tracking-wider mb-6 text-center border-y border-gray-300 py-3 bg-gray-50">
+                                        {viewingDoc.name}
+                                    </h1>
+
                                     <p>
                                         To,<br />
                                         The Chief Engineer,<br />
                                         Karnataka Public Works Department
                                     </p>
+
                                     <p className="mt-6 text-justify">
                                         Dear Sir/Madam,
                                         <br /><br />
@@ -313,28 +342,31 @@ export function FinalBidSequence() {
 
                                     {/* Mock text generation to fill out the page */}
                                     <div className="space-y-4 text-gray-600 mt-8">
-                                        {[...Array(4)].map((_, i) => (
-                                            <p key={i} className="text-justify bg-gray-50 p-4 rounded-lg border border-gray-100 text-sm">
-                                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum...
-                                            </p>
-                                        ))}
+                                        <p className="text-justify bg-gray-50 p-4 rounded-lg border border-gray-100 text-sm">
+                                            1. The bidder agrees to abide by all the terms and conditions outlined in the aforementioned tender document.
+                                            <br /><br />
+                                            2. It is certified that all the information provided herein is true and correct to the best of our knowledge. Any discrepancies found may lead to the immediate cancellation of the bid.
+                                            <br /><br />
+                                            3. The quoted rates shall remain valid for a period of 120 days from the date of opening of the financial bid.
+                                            <br /><br />
+                                            4. All statutory clearances, safety compliance, and labor laws shall be strictly adhered to during the execution of this contract.
+                                        </p>
                                     </div>
                                 </div>
 
-                                <div className="mt-20 pt-10 border-t border-gray-300 grid grid-cols-2 gap-8 text-sm">
+                                <div className="mt-20 pt-10 border-t border-gray-400 grid grid-cols-2 gap-8 text-sm">
                                     <div className="text-center">
                                         <div className="h-16 w-32 mx-auto border-b border-gray-400 mb-2"></div>
-                                        <p className="font-bold">Authorized Signatory</p>
+                                        <p className="font-bold text-gray-800">Authorized Signatory</p>
                                         <p className="text-gray-500">Applicant Company</p>
                                     </div>
                                     <div className="text-center">
                                         <div className="h-16 w-32 mx-auto border-b border-gray-400 mb-2 items-center flex justify-center text-4xl text-blue-100 opacity-50"><Building2 /></div>
-                                        <p className="font-bold">Company Stamp/Seal</p>
+                                        <p className="font-bold text-gray-800">Company Stamp/Seal</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
                     </motion.div>
                 </div>
             )}
