@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { motion } from "motion/react";
 import {
@@ -21,6 +22,30 @@ export function FinalDownloadSubmission() {
         id: tenderId || "1",
         title: "Industrial Valves Supply - Karnataka PWD",
         organization: "Karnataka Public Works Department",
+    };
+
+    // State to handle document deletion visually
+    const [docExists, setDocExists] = useState(true);
+
+    const handleCompress = () => {
+        alert("Compressing document into a ZIP file...");
+    };
+
+    const handleDelete = () => {
+        if (window.confirm("Are you sure you want to remove this document?")) {
+            setDocExists(false);
+        }
+    };
+
+    const handleDownload = () => {
+        // Create a dummy blob to simulate downloading the final document
+        const element = document.createElement("a");
+        const file = new Blob(["Final Bid Document - OpportunityX System Generated"], { type: 'text/plain' });
+        element.href = URL.createObjectURL(file);
+        element.download = "GEM_2025_8734834_Final_Bid_Document.txt";
+        document.body.appendChild(element); // Required for this to work in FireFox
+        element.click();
+        document.body.removeChild(element);
     };
 
     return (
@@ -92,7 +117,7 @@ export function FinalDownloadSubmission() {
                                     initial={{ scale: 0 }}
                                     animate={{ scale: 1 }}
                                     transition={{ type: "spring", stiffness: 200, delay: 0.3 }}
-                                    className="w-24 h-24 bg-emerald-500 rounded-[28px] flex items-center justify-center mb-8 shadow-md transform rotate-3 hover:rotate-0 transition-transform cursor-default"
+                                    className="w-24 h-24 bg-emerald-500 rounded-full flex items-center justify-center mb-8 shadow-md transform rotate-3 hover:rotate-0 transition-transform cursor-default"
                                 >
                                     <CheckCircle2 className="w-14 h-14 text-white" strokeWidth={3} />
                                 </motion.div>
@@ -102,29 +127,37 @@ export function FinalDownloadSubmission() {
                                 </h2>
 
                                 {/* Selected Document File Card */}
-                                <div className="w-full border border-blue-400 bg-blue-50/20 rounded-full px-6 py-3.5 flex justify-between items-center mb-10 group hover:border-[#4F46E5] transition-colors">
-                                    <div className="font-semibold text-gray-800 text-[14px]">GEM/2025/8734834 - Final Bid Document</div>
+                                {docExists ? (
+                                    <div className="w-full border border-blue-400 bg-blue-50/20 rounded-full px-6 py-3.5 flex justify-between items-center mb-10 group hover:border-[#4F46E5] transition-colors">
+                                        <div className="font-semibold text-gray-800 text-[14px]">GEM/2025/8734834 - Final Bid Document</div>
 
-                                    <div className="flex items-center gap-5">
-                                        <div className="text-[13px] font-bold text-gray-900">
-                                            File Size: <span className="font-medium text-gray-500">500kb</span>
-                                        </div>
+                                        <div className="flex items-center gap-5">
+                                            <div className="text-[13px] font-bold text-gray-900">
+                                                File Size: <span className="font-medium text-gray-500">500kb</span>
+                                            </div>
 
-                                        <div className="flex items-center gap-4 border-l border-gray-200 pl-4">
-                                            <button className="flex items-center gap-1.5 text-xs font-bold text-gray-700 hover:text-blue-600 transition-colors tooltip-trigger" title="Compress File">
-                                                <FileArchive className="w-4 h-4 text-gray-600" /> Compress
-                                            </button>
-                                            <button className="text-red-500 hover:text-red-600 hover:bg-red-50 p-1 rounded transition-colors tooltip-trigger" title="Remove Document">
-                                                <Trash2 className="w-5 h-5" />
-                                            </button>
+                                            <div className="flex items-center gap-4 border-l border-gray-200 pl-4">
+                                                <button onClick={handleCompress} className="flex items-center gap-1.5 text-xs font-bold text-gray-700 hover:text-blue-600 transition-colors tooltip-trigger" title="Compress File">
+                                                    <FileArchive className="w-4 h-4 text-gray-600" /> Compress
+                                                </button>
+                                                <button onClick={handleDelete} className="text-red-500 hover:text-red-600 hover:bg-red-50 p-1 rounded transition-colors tooltip-trigger" title="Remove Document">
+                                                    <Trash2 className="w-5 h-5" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className="w-full border border-dashed border-gray-300 bg-gray-50 rounded-full px-6 py-5 flex justify-center items-center mb-10 text-gray-500 text-sm italic">
+                                        Document has been removed.
+                                    </div>
+                                )}
 
                                 <motion.button
+                                    onClick={handleDownload}
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
-                                    className="px-16 py-4 rounded-[20px] bg-[#4F46E5] text-white font-bold text-lg hover:bg-[#4338ca] transition-colors shadow-lg shadow-indigo-500/30 flex items-center gap-3"
+                                    className="px-16 py-4 rounded-[20px] bg-[#4F46E5] text-white font-bold text-lg hover:bg-[#4338ca] transition-colors shadow-lg shadow-indigo-500/30 flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    disabled={!docExists}
                                 >
                                     <Download className="w-6 h-6" strokeWidth={2.5} /> Download
                                 </motion.button>
