@@ -28,7 +28,14 @@ export function FinalDownloadSubmission() {
     const [docExists, setDocExists] = useState(true);
 
     const handleCompress = () => {
-        alert("Compressing document into a ZIP file...");
+        // Create a dummy blob to simulate downloading a compressed zip
+        const element = document.createElement("a");
+        const file = new Blob(["PK\x03\x04Mock ZIP file content representing the compressed final bid documents. OpportunityX"], { type: 'application/zip' });
+        element.href = URL.createObjectURL(file);
+        element.download = "GEM_2025_8734834_Final_Bid_Document.zip";
+        document.body.appendChild(element); // Required for this to work in FireFox
+        element.click();
+        document.body.removeChild(element);
     };
 
     const handleDelete = () => {
@@ -38,11 +45,12 @@ export function FinalDownloadSubmission() {
     };
 
     const handleDownload = () => {
-        // Create a dummy blob to simulate downloading the final document
+        // Create a dummy blob to simulate downloading the final document as a PDF
         const element = document.createElement("a");
-        const file = new Blob(["Final Bid Document - OpportunityX System Generated"], { type: 'text/plain' });
+        // Using a basic string that starts with %PDF- to hint the browser/OS that this is a simulated PDF file
+        const file = new Blob(["%PDF-1.4\nMock PDF file content for the final bid document. OpportunityX"], { type: 'application/pdf' });
         element.href = URL.createObjectURL(file);
-        element.download = "GEM_2025_8734834_Final_Bid_Document.txt";
+        element.download = "GEM_2025_8734834_Final_Bid_Document.pdf";
         document.body.appendChild(element); // Required for this to work in FireFox
         element.click();
         document.body.removeChild(element);
