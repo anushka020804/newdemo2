@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router";
 import HSNChatbot from "../components/HSNChatbot";
 import HSNMasterFinder from "../components/HSNMasterFinder";
 import { Plus, Edit2, Trash2, Check, X, Mail, MessageCircle } from "lucide-react";
+import { saveHsnSetup } from "../api/profile";
 
 interface HSNRow {
   id: string;
@@ -45,6 +46,7 @@ export function HSNSetup() {
   const [editKeyword, setEditKeyword] = useState("");
   const [emailNotif, setEmailNotif] = useState(true);
   const [whatsappNotif, setWhatsappNotif] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAddRow = () => {
     const newRow: HSNRow = { id: Date.now().toString(), hsnCode: "", productKeyword: "" };
@@ -77,14 +79,40 @@ export function HSNSetup() {
 
   const handleDelete = (id: string) => setRows(rows.filter((row) => row.id !== id));
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const hasEmptyKeywords = rows.some((row) => !row.productKeyword.trim());
     if (hasEmptyKeywords || rows.length === 0) {
       alert("Please add at least one product with a keyword.");
       return;
     }
-    // After HSN setup, send user to login for verification before welcome/dashboard
-    navigate("/login", { state: { from: "hsn" } });
+
+    const customerId = location.state?.customerId;
+    if (!customerId) {
+      alert("Session expired or missing customer ID. Please restart the signup process.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        hsns: rows.map(r => ({
+          hsnCode: r.hsnCode,
+          keywords: r.productKeyword.split(',').map(k => k.trim()).filter(k => k)
+        })),
+        emailAlerts: emailNotif,
+        whatsappAlerts: whatsappNotif
+      };
+
+      await saveHsnSetup(payload);
+
+      // After HSN setup, send user to login for verification before welcome/dashboard
+      navigate("/login", { state: { from: "hsn" } });
+    } catch (error) {
+      console.error("Failed to save HSN setup:", error);
+      alert("Failed to save HSN setup. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -237,9 +265,10 @@ export function HSNSetup() {
           <div className="flex justify-center pt-2">
             <button
               onClick={handleSubmit}
-              className="bg-[#3D4BFF] hover:bg-blue-700 text-white text-sm font-medium px-12 py-2.5 rounded-md transition-colors shadow-sm"
+              disabled={isSubmitting}
+              className="bg-[#3D4BFF] hover:bg-blue-700 text-white text-sm font-medium px-12 py-2.5 rounded-md transition-colors shadow-sm disabled:opacity-50"
             >
-              Submit
+              {isSubmitting ? "Submitting..." : "Submit"}
             </button>
           </div>
 

@@ -63,7 +63,7 @@ export function FinalDownloadSubmission() {
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <button
-                            onClick={() => navigate(-1)}
+                            onClick={() => navigate(`/tender/${tenderId}/final-bid-sequence`)}
                             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                         >
                             <ArrowLeft className="w-5 h-5 text-gray-500" />

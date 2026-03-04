@@ -63,10 +63,10 @@ export function WelcomeScreen() {
           </motion.button>
 
           <button
-            onClick={() => navigate("/profile")}
+            onClick={() => navigate("/complete-profile")}
             className="px-5 py-3 rounded-xl border border-gray-200 text-gray-700 bg-white hover:bg-gray-50 transition-all"
           >
-            View Profile
+            Complete Profile
           </button>
         </div>
       </motion.div>

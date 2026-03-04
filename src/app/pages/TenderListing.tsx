@@ -16,8 +16,12 @@ import {
   Zap,
   BarChart3,
   TrendingDown,
-  FileText
+  FileText,
+  LayoutGrid,
+  List,
+  Loader2
 } from "lucide-react";
+import { getMatchedBids, BidResult } from "../api/bids";
 
 interface Tender {
   id: string;
@@ -41,179 +45,81 @@ export function TenderListing() {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(true);
-  const [selectedStatus, setSelectedStatus] = useState<string>("past-24hrs");
+  const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedMinistry, setSelectedMinistry] = useState<string>("all");
   const [selectedBuyer, setSelectedBuyer] = useState<string>("all");
   const [sortOption, setSortOption] = useState<string>("posted-date-desc");
   const [showDailySummary, setShowDailySummary] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
 
-  const tenders: Tender[] = [
-    // Past 24 Hours Tenders
-    {
-      id: "1",
-      tenderNumber: "TND-001",
-      buyerName: "Karnataka Public Works Department",
-      organization: "Karnataka PWD",
-      ministry: "Ministry of Road Transport & Highways",
-      location: "Karnataka",
-      quantity: "5000 units",
-      tenderValue: "₹45,00,000",
-      submissionDate: "Feb 15, 2026",
-      postedDate: "Feb 9, 2026",
-      timeAgo: "2 hours ago",
-      status: "past-24hrs",
-      category: "Industrial Valves",
-      matchPercentage: 95
-    },
-    {
-      id: "2",
-      tenderNumber: "TND-002",
-      buyerName: "Indian Railways - Western Zone",
-      organization: "Railway Board",
-      ministry: "Ministry of Railways",
-      location: "Pan India",
-      quantity: "2500 units",
-      tenderValue: "₹35,00,000",
-      submissionDate: "Feb 20, 2026",
-      postedDate: "Feb 9, 2026",
-      timeAgo: "8 hours ago",
-      status: "past-24hrs",
-      category: "Railway Equipment",
-      matchPercentage: 88
-    },
-    // Active Tenders - Ministry of Road Transport
-    {
-      id: "3",
-      tenderNumber: "TND-003",
-      buyerName: "National Highways Authority of India",
-      organization: "NHAI",
-      ministry: "Ministry of Road Transport & Highways",
-      location: "Maharashtra",
-      quantity: "10000 units",
-      tenderValue: "₹82,50,000",
-      submissionDate: "Feb 12, 2026",
-      postedDate: "Feb 5, 2026",
-      timeAgo: "4 days ago",
-      status: "active",
-      category: "Steel Fasteners",
-      matchPercentage: 92
-    },
-    // Active Tenders - Ministry of Urban Affairs
-    {
-      id: "4",
-      tenderNumber: "TND-004",
-      buyerName: "Delhi Metro Rail Corporation",
-      organization: "DMRC",
-      ministry: "Ministry of Housing & Urban Affairs",
-      location: "Delhi NCR",
-      quantity: "7500 units",
-      tenderValue: "₹62,00,000",
-      submissionDate: "Feb 18, 2026",
-      postedDate: "Feb 6, 2026",
-      timeAgo: "3 days ago",
-      status: "active",
-      category: "Industrial Valves",
-      matchPercentage: 85
-    },
-    // Closing Soon
-    {
-      id: "5",
-      tenderNumber: "TND-005",
-      buyerName: "Gujarat Road Development Corporation",
-      organization: "GRDC",
-      ministry: "Ministry of Road Transport & Highways",
-      location: "Gujarat",
-      quantity: "3500 units",
-      tenderValue: "₹28,50,000",
-      submissionDate: "Feb 10, 2026",
-      postedDate: "Jan 20, 2026",
-      timeAgo: "20 days ago",
-      status: "closing-soon",
-      category: "Pipeline Fittings",
-      matchPercentage: 78
-    },
-    {
-      id: "6",
-      tenderNumber: "TND-006",
-      buyerName: "Maharashtra State Electricity Board",
-      organization: "MSEB",
-      ministry: "Ministry of Power",
-      location: "Maharashtra",
-      quantity: "3000 units",
-      tenderValue: "₹28,00,000",
-      submissionDate: "Feb 5, 2026",
-      postedDate: "Jan 15, 2026",
-      timeAgo: "25 days ago",
-      status: "expired",
-      category: "Electrical Components",
-      matchPercentage: 82
-    },
-    // New Examples from User Data
-    {
-      id: "7",
-      tenderNumber: "GEM/2025/B/6864306",
-      buyerName: "Ministry of Heavy Industries",
-      organization: "HMT MACHINE TOOLS LIMITED",
-      ministry: "Ministry of Heavy Industries",
-      location: "India",
-      quantity: "7 units",
-      tenderValue: "₹TBA",
-      submissionDate: "Dec 19, 2025",
-      postedDate: "Nov 07, 2025",
-      timeAgo: "2 hours ago",
-      status: "past-24hrs",
-      category: "DC MAGNET",
-      matchPercentage: 38
-    },
-    {
-      id: "8",
-      tenderNumber: "GEM/2025/B/7006690",
-      buyerName: "Ministry of Chemicals and Fertilizers",
-      organization: "NIPER MOHALI",
-      ministry: "Ministry of Chemicals and Fertilizers",
-      location: "Mohali",
-      quantity: "49 units",
-      tenderValue: "₹TBA",
-      submissionDate: "Jan 06, 2026",
-      postedDate: "Dec 16, 2025",
-      timeAgo: "1 day ago",
-      status: "active",
-      category: "Chemical 1, Chemical 2...",
-      matchPercentage: 35
-    },
-    {
-      id: "9",
-      tenderNumber: "GEM/2025/B/6933082",
-      buyerName: "Ministry of Defence",
-      organization: "INDIAN AIR FORCE",
-      ministry: "Ministry of Defence",
-      location: "India",
-      quantity: "5 units",
-      tenderValue: "₹TBA",
-      submissionDate: "Dec 18, 2025",
-      postedDate: "Nov 26, 2025",
-      timeAgo: "5 days ago",
-      status: "active",
-      category: "LABEL PRINTER, SPARE TAPE",
-      matchPercentage: 26
-    },
-    {
-      id: "10",
-      tenderNumber: "GEM/2025/B/6927986",
-      buyerName: "Ministry of Petroleum and Natural Gas",
-      organization: "HPCL RAJASTHAN REFINERY LIMITED",
-      ministry: "Ministry of Petroleum and Natural Gas",
-      location: "Rajasthan",
-      quantity: "14 units",
-      tenderValue: "₹TBA",
-      submissionDate: "Dec 16, 2025",
-      postedDate: "Nov 25, 2025",
-      timeAgo: "10 days ago",
-      status: "closing-soon",
-      category: "Jib crane installation",
-      matchPercentage: 20
-    }
-  ];
+  const [tenders, setTenders] = useState<Tender[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTenders = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const bids = await getMatchedBids();
+
+        // Map backend BidResult to frontend Tender
+        const mappedTenders: Tender[] = bids.map((bid) => {
+          // Determine status based on dates
+          let status: Tender["status"] = "active";
+          if (bid.endDate) {
+            const endDates = new Date(bid.endDate);
+            const now = new Date();
+            const timeDiff = endDates.getTime() - now.getTime();
+            const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+            if (daysDiff < 0) {
+              status = "expired";
+            } else if (daysDiff <= 3) {
+              status = "closing-soon";
+            }
+          }
+
+          if (bid.startDate) {
+            const startDate = new Date(bid.startDate);
+            const now = new Date();
+            const timeDiff = now.getTime() - startDate.getTime();
+            const hoursDiff = timeDiff / (1000 * 3600);
+            if (hoursDiff <= 24 && status !== "expired" && status !== "closing-soon") {
+              status = "past-24hrs";
+            }
+          }
+
+          return {
+            id: bid.bidNumber,
+            tenderNumber: bid.bidNumber,
+            buyerName: bid.department || bid.organization || 'Unknown Buyer',
+            organization: bid.organization || 'Unknown Organization',
+            ministry: bid.ministry || 'Unknown Ministry',
+            location: "Pan India", // Default if not provided
+            quantity: bid.quantity ? `${bid.quantity} units` : "TBA",
+            tenderValue: "TBA", // Default value
+            submissionDate: bid.endDate ? new Date(bid.endDate).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) : "N/A",
+            postedDate: bid.startDate ? new Date(bid.startDate).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) : "N/A",
+            timeAgo: bid.startDate ? "Recently" : "N/A", // We can enhance this later
+            status: status,
+            category: bid.matchedKeyword || bid.items?.substring(0, 30) || "General",
+            // Normalize score. Backend score seems to have max around 20 for HSN matches.
+            matchPercentage: Math.min(100, Math.round(bid.finalScore * 5))
+          };
+        });
+
+        setTenders(mappedTenders);
+      } catch (err: any) {
+        console.error("Failed to fetch matched bids", err);
+        setError("Failed to load your matched tenders. Please try again.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTenders();
+  }, []);
 
   const getStatusConfig = (status: string) => {
     switch (status) {
@@ -250,12 +156,12 @@ export function TenderListing() {
     switch (sortOption) {
       case "posted-date-desc":
         return new Date(b.postedDate).getTime() - new Date(a.postedDate).getTime();
+      case "posted-date-asc":
+        return new Date(a.postedDate).getTime() - new Date(b.postedDate).getTime();
       case "submission-date-asc":
         return new Date(a.submissionDate).getTime() - new Date(b.submissionDate).getTime();
-      case "ministry-asc":
-        return a.ministry.localeCompare(b.ministry);
-      case "buyer-asc":
-        return a.buyerName.localeCompare(b.buyerName);
+      case "submission-date-desc":
+        return new Date(b.submissionDate).getTime() - new Date(a.submissionDate).getTime();
       default:
         return 0;
     }
@@ -411,17 +317,17 @@ export function TenderListing() {
 
                 {/* Sort Filter */}
                 <div>
-                  <label className="block text-sm text-gray-700 mb-2">Sort By</label>
+                  <label className="block text-sm text-gray-700 mb-2">Sort by Date</label>
                   <div className="relative">
                     <select
                       value={sortOption}
                       onChange={(e) => setSortOption(e.target.value)}
                       className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none pr-10"
                     >
-                      <option value="posted-date-desc">Newest First</option>
-                      <option value="submission-date-asc">Submission Deadline (Soonest)</option>
-                      <option value="ministry-asc">Ministry Name (A-Z)</option>
-                      <option value="buyer-asc">Buyer Name (A-Z)</option>
+                      <option value="posted-date-desc">Date (Newest first)</option>
+                      <option value="posted-date-asc">Date (Oldest first)</option>
+                      <option value="submission-date-asc">Deadline (Soonest first)</option>
+                      <option value="submission-date-desc">Deadline (Latest first)</option>
                     </select>
                     <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
                   </div>
@@ -433,17 +339,42 @@ export function TenderListing() {
           {/* Main Content Area */}
           <div className="flex-1 w-full relative">
 
-            {/* Search Bar & Result Count */}
+            {/* Search Bar & Result Count & View Toggle */}
             <div className="mb-6 sticky top-24 z-40 bg-indigo-50/90 backdrop-blur-md pt-2 pb-2 -mt-2">
-              <div className="relative mb-4">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search tenders by buyer, organization, or category..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm shadow-sm"
-                />
+              <div className="flex items-center gap-3 mb-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search tenders by buyer, organization, or category..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm shadow-sm"
+                  />
+                </div>
+                {/* View Toggle */}
+                <div className="flex items-center bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+                  <button
+                    onClick={() => setViewMode("list")}
+                    className={`p-3 transition-colors ${viewMode === "list"
+                      ? "bg-indigo-600 text-white"
+                      : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                      }`}
+                    title="List View"
+                  >
+                    <List className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className={`p-3 transition-colors ${viewMode === "grid"
+                      ? "bg-indigo-600 text-white"
+                      : "text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                      }`}
+                    title="Grid View"
+                  >
+                    <LayoutGrid className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
               <p className="text-sm text-gray-600">Showing <span className="text-indigo-600 font-medium">{filteredTenders.length}</span> tenders</p>
             </div>
@@ -515,14 +446,27 @@ export function TenderListing() {
             )}
 
             {/* Tender Cards */}
-            <div className="space-y-6">
-              {filteredTenders.length === 0 ? (
-                <div className="bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-100">
+            <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-5" : "space-y-6"}>
+              {isLoading ? (
+                <div className={`bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-100 ${viewMode === "grid" ? "md:col-span-2" : ""}`}>
+                  <Loader2 className="w-12 h-12 text-indigo-500 mx-auto mb-4 animate-spin" />
+                  <p className="text-xl text-gray-600 mb-2">Finding Your Matches...</p>
+                  <p className="text-gray-500">We are analyzing thousands of tenders using your HSN codes</p>
+                </div>
+              ) : error ? (
+                <div className={`bg-white rounded-2xl shadow-lg p-12 text-center border border-red-100 ${viewMode === "grid" ? "md:col-span-2" : ""}`}>
+                  <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-4" />
+                  <p className="text-xl text-red-600 mb-2">Error loading matches</p>
+                  <p className="text-red-500">{error}</p>
+                </div>
+              ) : filteredTenders.length === 0 ? (
+                <div className={`bg-white rounded-2xl shadow-lg p-12 text-center border border-gray-100 ${viewMode === "grid" ? "md:col-span-2" : ""}`}>
                   <AlertCircle className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                   <p className="text-xl text-gray-600 mb-2">No tenders found</p>
                   <p className="text-gray-500">Try adjusting your filters or search query</p>
                 </div>
-              ) : (
+              ) : viewMode === "list" ? (
+                /* ===== LIST VIEW ===== */
                 filteredTenders.map((tender, index) => {
                   const statusConfig = getStatusConfig(tender.status);
                   return (
@@ -614,6 +558,102 @@ export function TenderListing() {
                             </button>
                           </div>
                         </div>
+                      </div>
+                    </motion.div>
+                  );
+                })
+              ) : (
+                /* ===== GRID VIEW ===== */
+                filteredTenders.map((tender, index) => {
+                  const statusConfig = getStatusConfig(tender.status);
+                  return (
+                    <motion.div
+                      key={tender.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.04 }}
+                      className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all border border-gray-100 flex flex-col cursor-pointer group"
+                      onClick={() => navigate(`/analysis1/${tender.id}`)}
+                    >
+                      {/* Card Header */}
+                      <div className="p-5 pb-3">
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-xs font-semibold text-indigo-500 bg-indigo-50 px-2 py-1 rounded-md">
+                            {tender.tenderNumber}
+                          </span>
+                          <span className={`px-3 py-1 ${statusConfig.bg} ${statusConfig.text} text-[11px] font-medium rounded-full border ${statusConfig.border}`}>
+                            {statusConfig.label}
+                          </span>
+                        </div>
+                        <div className="flex items-start gap-3">
+                          <div className="bg-indigo-500 rounded-lg p-2 flex-shrink-0">
+                            <Building2 className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="text-sm font-bold text-gray-900 leading-tight line-clamp-2 group-hover:text-indigo-700 transition-colors">
+                              {tender.buyerName}
+                            </h3>
+                            <p className="text-xs text-gray-500 mt-0.5 truncate">{tender.organization}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Card Body */}
+                      <div className="px-5 py-3 border-t border-gray-50 flex-1">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <p className="text-[11px] text-gray-400 mb-0.5">Category</p>
+                            <p className="text-xs font-semibold text-gray-800 truncate" title={tender.category}>{tender.category}</p>
+                          </div>
+                          <div>
+                            <p className="text-[11px] text-gray-400 mb-0.5">Quantity</p>
+                            <p className="text-xs font-semibold text-gray-800">{tender.quantity}</p>
+                          </div>
+                          <div>
+                            <p className="text-[11px] text-gray-400 mb-0.5">Value</p>
+                            <div className="flex items-center gap-0.5 text-xs font-semibold text-gray-800">
+                              <IndianRupee className="w-3 h-3" />
+                              <span>{tender.tenderValue}</span>
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-[11px] text-gray-400 mb-0.5">Deadline</p>
+                            <div className="flex items-center gap-0.5 text-xs font-semibold text-gray-800">
+                              <Calendar className="w-3 h-3" />
+                              <span>{tender.submissionDate}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Card Footer */}
+                      <div className="px-5 py-3 border-t border-gray-100 flex items-center justify-between">
+                        <div className="flex items-center gap-1.5">
+                          {tender.status === 'closing-soon' ? (
+                            <>
+                              <Clock className="w-3.5 h-3.5 text-amber-500" />
+                              <span className="text-xs font-medium text-amber-500">Closing soon</span>
+                            </>
+                          ) : tender.status === 'active' ? (
+                            <>
+                              <TrendingUp className="w-3.5 h-3.5 text-blue-500" />
+                              <span className="text-xs font-medium text-blue-500">Open</span>
+                            </>
+                          ) : tender.status === 'past-24hrs' ? (
+                            <>
+                              <TrendingUp className="w-3.5 h-3.5 text-green-500" />
+                              <span className="text-xs font-medium text-green-500">New</span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertCircle className="w-3.5 h-3.5 text-gray-400" />
+                              <span className="text-xs font-medium text-gray-400">Closed</span>
+                            </>
+                          )}
+                        </div>
+                        <span className="text-xs font-medium text-indigo-600 group-hover:text-indigo-800 transition-colors">
+                          View Details →
+                        </span>
                       </div>
                     </motion.div>
                   );

@@ -14,6 +14,8 @@ export interface SignupStep2Payload {
     legalName: string;
     gstin?: string;
     address?: string;
+    establishmentYear?: string;
+    ownerName?: string;
 }
 
 export interface SendOtpPayload {

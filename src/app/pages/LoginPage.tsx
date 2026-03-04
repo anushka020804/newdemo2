@@ -101,7 +101,7 @@ export function LoginPage() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100"
         >
-          <h2 className="text-2xl mb-6 text-gray-900">Welcome Back</h2>
+          <h2 className="text-2xl mb-6 text-gray-900">Login</h2>
 
           {error && (
             <div className="mb-6 p-4 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">

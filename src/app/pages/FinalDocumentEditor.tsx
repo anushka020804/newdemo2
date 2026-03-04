@@ -17,7 +17,8 @@ import {
     List,
     ListOrdered,
     Highlighter,
-    Type
+    Type,
+    ClipboardList
 } from "lucide-react";
 
 export function FinalDocumentEditor() {
@@ -43,7 +44,7 @@ export function FinalDocumentEditor() {
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <button
-                            onClick={() => navigate(-1)}
+                            onClick={() => navigate(`/tender/${tenderId}/generated-documents`)}
                             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                         >
                             <ArrowLeft className="w-5 h-5 text-gray-500" />
@@ -202,7 +203,7 @@ export function FinalDocumentEditor() {
                             {/* Footer Buttons */}
                             <div className="p-5 border-t border-gray-100 bg-white flex gap-4">
                                 <button
-                                    onClick={() => navigate(-1)}
+                                    onClick={() => navigate(`/tender/${tenderId}/generated-documents`)}
                                     className="px-8 py-3 rounded-[16px] border border-gray-300 text-gray-700 font-bold text-[15px] hover:bg-gray-50 transition-colors w-1/2"
                                 >
                                     Back
@@ -220,16 +221,16 @@ export function FinalDocumentEditor() {
                     {/* Right Column - Actions Sidebar */}
                     <div className="lg:col-span-1 space-y-4">
 
-                        {/* 1. Go Back Button */}
+                        {/* 1. Check Saved Bids Button */}
                         <motion.button
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.1 }}
-                            onClick={() => navigate(-1)}
-                            className="w-full bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-bold px-6 py-4 rounded-[24px] flex items-center justify-center gap-3 shadow-sm transition-colors text-[16px]"
+                            onClick={() => navigate("/saved-bids")}
+                            className="w-full bg-white hover:bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold px-6 py-4 rounded-[24px] flex items-center justify-center gap-3 shadow-sm transition-all hover:shadow-md text-[16px]"
                         >
-                            <ArrowLeft className="w-5 h-5 text-gray-700" strokeWidth={2.5} />
-                            Go Back
+                            <ClipboardList className="w-5 h-5 text-indigo-700" strokeWidth={2.5} />
+                            Check all saved bids
                         </motion.button>
 
                         {/* 2. Opportunity X AI Chatbot */}

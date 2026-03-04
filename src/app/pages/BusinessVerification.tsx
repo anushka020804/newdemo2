@@ -232,16 +232,18 @@ export function BusinessVerification() {
       setSubmitError(null);
 
       try {
-        await signupStep2({
+        const res = await signupStep2({
           email,
           pan: pan.toUpperCase(),
           legalName: editableDetails.companyName,
           gstin: editableDetails.gstNumber,
           address: editableDetails.address,
+          establishmentYear: editableDetails.establishmentYear,
+          ownerName: ownerName,
         });
 
         navigate("/hsn-setup", {
-          state: { ownerName, email, editableDetails, hsnDetails },
+          state: { ownerName, email, editableDetails, hsnDetails, customerId: res.user.id },
         });
       } catch (err: any) {
         const msg = err.response?.data?.message || err.message || 'Failed to complete business verification';

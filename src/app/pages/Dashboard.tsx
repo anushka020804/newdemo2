@@ -12,7 +12,9 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  LogOut
+  LogOut,
+  FileSearch,
+  FileBadge
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useLogout } from "../hooks/useLogout";
@@ -46,6 +48,20 @@ export function Dashboard() {
       icon: Sparkles,
       gradient: "from-purple-500 to-pink-500",
       action: () => navigate("/tenders", { state: { filter: "active" } })
+    },
+    {
+      title: "Analyse Tender",
+      value: "8",
+      icon: FileSearch,
+      gradient: "from-emerald-500 to-teal-500",
+      action: () => navigate("/tenders")
+    },
+    {
+      title: "Generated Bid Documents",
+      value: "3",
+      icon: FileBadge,
+      gradient: "from-rose-500 to-pink-500",
+      action: () => navigate("/saved-bids")
     },
     {
       title: "Saved Tenders",
@@ -212,7 +228,7 @@ export function Dashboard() {
         </motion.div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           {kpiCards.map((card, index) => (
             <motion.div
               key={card.title}
