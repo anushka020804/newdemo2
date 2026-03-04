@@ -242,6 +242,11 @@ export function BusinessVerification() {
           ownerName: ownerName,
         });
 
+        // Store the access token so HSN setup can use authenticated endpoints
+        if (res.accessToken) {
+          localStorage.setItem('accessToken', res.accessToken);
+        }
+
         navigate("/hsn-setup", {
           state: { ownerName, email, editableDetails, hsnDetails, customerId: res.user.id },
         });

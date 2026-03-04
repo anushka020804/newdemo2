@@ -86,12 +86,6 @@ export function HSNSetup() {
       return;
     }
 
-    const customerId = location.state?.customerId;
-    if (!customerId) {
-      alert("Session expired or missing customer ID. Please restart the signup process.");
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       const payload = {
@@ -103,13 +97,21 @@ export function HSNSetup() {
         whatsappAlerts: whatsappNotif
       };
 
-      await saveHsnSetup(payload);
+      console.log("=== HSN SUBMIT ===");
+      console.log("Payload:", JSON.stringify(payload, null, 2));
+      console.log("Access token exists:", !!localStorage.getItem('accessToken'));
+
+      const result = await saveHsnSetup(payload);
+      console.log("HSN save SUCCESS:", result);
 
       // After HSN setup, send user to login for verification before welcome/dashboard
       navigate("/login", { state: { from: "hsn" } });
-    } catch (error) {
-      console.error("Failed to save HSN setup:", error);
-      alert("Failed to save HSN setup. Please try again.");
+    } catch (error: any) {
+      console.error("=== HSN SAVE FAILED ===");
+      console.error("Error status:", error?.response?.status);
+      console.error("Error data:", error?.response?.data);
+      console.error("Full error:", error);
+      alert(`Failed to save HSN setup: ${error?.response?.data?.message || error.message || 'Unknown error'}`);
     } finally {
       setIsSubmitting(false);
     }
