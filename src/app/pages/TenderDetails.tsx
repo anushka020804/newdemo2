@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useLocation } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import jsPDF from "jspdf";
 import {
@@ -22,6 +22,7 @@ import {
 
 export function TenderDetails() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { tenderId } = useParams();
 
   // Accordion state management
@@ -51,8 +52,8 @@ export function TenderDetails() {
 
     // Metrics
     doc.setFontSize(12);
-    doc.text(`Tender Value: ${tender.tenderValue}`, 20, 80);
-    doc.text(`Submission Deadline: ${tender.submissionDeadline}`, 20, 90);
+    doc.text(`Bid Start Date: ${tender.bidStartDate}`, 20, 80);
+    doc.text(`Bid End Date: ${tender.submissionDeadline}`, 20, 90);
     doc.text(`Quantity: ${tender.quantity}`, 20, 100);
     doc.text(`HSN Code: ${tender.hsnCode}`, 20, 110);
 
@@ -78,10 +79,9 @@ export function TenderDetails() {
       id: "1",
       title: "Industrial Valves Supply - Karnataka PWD",
       organization: "Bharat Heavy Electrical Limited (BHEL)",
-      tenderValue: "₹45,00,000",
+      tenderValue: "TBA",
       submissionDeadline: "Feb 15, 2026",
-      publishDate: "Jan 28, 2026",
-      openingDate: "Feb 16, 2026",
+      bidStartDate: "Jan 28, 2026",
       quantity: "500",
       hsnCode: "85019000",
       matchScore: 90,
@@ -121,7 +121,25 @@ export function TenderDetails() {
     return tenderDatabase[id || "1"] || defaultData;
   };
 
-  const tender = getTenderData(tenderId);
+  const mockTender = getTenderData(tenderId);
+  const passedTender = location.state?.tender;
+  const rawBid = passedTender?.rawBid || {};
+  console.log("RAW", rawBid)
+
+  const tender = {
+    ...mockTender,
+    id: tenderId || mockTender.id,
+    title: rawBid.bidNumber || rawBid.items || mockTender.title,
+    organization: rawBid.organization || passedTender?.organization || mockTender.organization,
+    ministry: rawBid.ministry || '',
+    department: rawBid.department || '',
+    items: rawBid.items || '',
+    bidUrl: rawBid.bidUrl || '',
+    submissionDeadline: passedTender?.submissionDate || mockTender.submissionDeadline,
+    bidStartDate: passedTender?.postedDate || mockTender.bidStartDate,
+    quantity: passedTender?.quantity || mockTender.quantity,
+    hsnCode: rawBid.hsnCode || mockTender.hsnCode,
+  };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">
@@ -130,7 +148,7 @@ export function TenderDetails() {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
-              onClick={() => navigate(`/analysis1/${tenderId}`)}
+              onClick={() => navigate(-1)}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-5 h-5 text-gray-500" />
@@ -166,22 +184,55 @@ export function TenderDetails() {
                 <div className="w-14 h-14 bg-[#3B82F6] rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
                   <Building2 className="w-7 h-7 text-white" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <h2 className="text-2xl font-bold text-gray-900 mb-1">{tender.title}</h2>
                   <p className="text-sm font-medium text-[#3B82F6]">
                     {tender.organization}
                   </p>
                 </div>
+                {tender.bidUrl && (
+                  <a
+                    href={tender.bidUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-[#4F46E5] text-white rounded-xl hover:bg-[#4338CA] transition-colors shadow-sm font-semibold text-sm flex-shrink-0"
+                  >
+                    <Download className="w-4 h-4" />
+                    Bid Document
+                  </a>
+                )}
               </div>
+
+              {/* Info Cards */}
+              {tender.ministry && (
+                <div className="mb-4 p-4 bg-[#FAFAFF] rounded-[16px] border border-[#EEF2FF]">
+                  <p className="text-[11px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Ministry</p>
+                  <p className="text-sm font-semibold text-gray-900">{tender.ministry}</p>
+                </div>
+              )}
+              {tender.department && (
+                <div className="mb-4 p-4 bg-[#F8FAFC] rounded-[16px] border border-gray-100">
+                  <p className="text-[11px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Department</p>
+                  <p className="text-sm font-semibold text-gray-900">{tender.department}</p>
+                </div>
+              )}
+              {tender.items && (
+                <div className="mb-6 p-4 bg-[#F8FAFC] rounded-[16px] border border-gray-100">
+                  <p className="text-[11px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Items</p>
+                  <p className="text-sm font-semibold text-gray-900 leading-relaxed">{tender.items}</p>
+                </div>
+              )}
 
               {/* Data Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-6 bg-[#FAFAFF] rounded-[20px] border border-[#EEF2FF]">
                   <p className="text-[11px] font-bold text-gray-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
-                    <span className="w-4 h-4 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-serif text-[10px]">$</span>
-                    TENDER VALUE
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    BID START DATE
                   </p>
-                  <p className="text-[28px] font-bold text-[#4F46E5]">{tender.tenderValue}</p>
+                  <p className="text-[28px] font-bold text-[#4F46E5]">{tender.bidStartDate}</p>
                 </div>
 
                 <div className="p-6 bg-[#FFF9F5] rounded-[20px] border border-[#FFF0E5]">
@@ -191,34 +242,13 @@ export function TenderDetails() {
                     </svg>
                     BID END DATE
                   </p>
-                  <p className="text-[28px] font-bold text-[#F97316] mb-1">{tender.submissionDeadline}</p>
-                  <p className="text-[11px] text-[#F97316] font-medium">18 days remaining</p>
+                  <p className="text-[28px] font-bold text-[#F97316]">{tender.submissionDeadline}</p>
                 </div>
 
                 <div className="p-6 bg-[#F8FAFC] rounded-[20px] border border-gray-100">
                   <p className="text-[11px] font-bold text-gray-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    PUBLISHED DATE
-                  </p>
-                  <p className="text-[15px] font-bold text-gray-900">{tender.publishDate}</p>
-                </div>
-
-                <div className="p-6 bg-[#F8FAFC] rounded-[20px] border border-gray-100">
-                  <p className="text-[11px] font-bold text-gray-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    BID OPENING
-                  </p>
-                  <p className="text-[15px] font-bold text-gray-900">{tender.openingDate}</p>
-                </div>
-
-                <div className="p-6 bg-[#F8FAFC] rounded-[20px] border border-gray-100">
-                  <p className="text-[11px] font-bold text-gray-400 mb-3 flex items-center gap-2 uppercase tracking-wider">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                      <path d="M6 3h12M6 8h12M6 3v5M14 8c0 5.523-4 8-8 8M8 21l8-8" />
                     </svg>
                     QUANTITY
                   </p>

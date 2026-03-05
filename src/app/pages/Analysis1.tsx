@@ -1,42 +1,46 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router";
+import { useParams, useNavigate, useLocation } from "react-router";
 import { motion } from "motion/react";
 import {
     ArrowLeft,
     Building2,
     Calendar,
-    IndianRupee,
-    Clock,
     Package,
     FileCode2,
     Sparkles,
-    Loader2
+    Loader2,
+    Download
 } from "lucide-react";
 
 export function Analysis1() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { id: tenderId } = useParams();
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+    const passedTender = location.state?.tender;
+    const rawBid = passedTender?.rawBid || {};
 
     // Use the ID from URL if available, otherwise fallback to "1"
     const tender = {
         id: tenderId || "1",
-        title: "Industrial Valves Supply - Karnataka PWD",
-        organization: "Bharat Heavy Electrical Limited (BHEL)",
-        referenceId: `TND-${tenderId || "1"}`,
-        tenderValue: "₹45,00,000",
-        bidEndDate: "Feb 15, 2026",
-        daysRemaining: 18,
-        publishedDate: "Jan 28, 2026",
-        bidOpening: "Feb 16, 2026",
-        quantity: "500",
-        hsnCode: "85019000"
-    };
+        title: rawBid.items || "Industrial Valves Supply - Karnataka PWD",
+        organization: rawBid.organization || passedTender?.organization || "Bharat Heavy Electrical Limited (BHEL)",
+        referenceId: tenderId?.startsWith("GEM") ? tenderId : `TND-${tenderId || "1"}`,
+        ministry: rawBid.ministry || '',
+        department: rawBid.department || '',
+        items: rawBid.items || '',
+        bidUrl: rawBid.bidUrl || '',
+        bidStartDate: passedTender?.postedDate || "Jan 28, 2026",
+        bidEndDate: passedTender?.submissionDate || "Feb 15, 2026",
+        quantity: passedTender?.quantity || "500",
+        hsnCode: rawBid.hsnCode || "85019000"
+    }
 
     const handleStartAnalysis = () => {
         setIsAnalyzing(true);
         setTimeout(() => {
-            navigate(`/tender/${tender.id}`);
+            navigate(`/tender/${encodeURIComponent(tender.id)}`, { state: { tender: passedTender } });
         }, 2000); // 2-second buffer
     };
 
@@ -79,8 +83,8 @@ export function Analysis1() {
                             <div className="w-16 h-16 bg-[#3B82F6] rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm">
                                 <Building2 className="w-8 h-8 text-white" />
                             </div>
-                            <div>
-                                <h2 className="text-2xl font-bold text-gray-900 mb-1">{tender.title}</h2>
+                            <div className="flex-1">
+                                <h2 className="text-2xl font-bold text-gray-900 mb-1">{rawBid.bidNumber || tender.referenceId}</h2>
                                 <div className="flex items-center gap-2">
                                     <span className="p-1 bg-[#EFF6FF] text-[#3B82F6] rounded">
                                         <Building2 className="w-3.5 h-3.5" />
@@ -89,24 +93,55 @@ export function Analysis1() {
                                 </div>
                                 <p className="text-xs text-gray-400 font-medium mt-1.5 tracking-wide">Tender ID: {tender.referenceId}</p>
                             </div>
+                            {tender.bidUrl && (
+                                <a
+                                    href={tender.bidUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 px-5 py-2.5 bg-[#4F46E5] text-white rounded-xl hover:bg-[#4338CA] transition-colors shadow-sm font-semibold text-sm flex-shrink-0"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    Bid Document
+                                </a>
+                            )}
                         </motion.div>
+
+                        {/* Info Cards */}
+                        {tender.ministry && (
+                            <div className="p-4 bg-[#FAFAFF] rounded-[16px] border border-[#EEF2FF]">
+                                <p className="text-[11px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Ministry</p>
+                                <p className="text-sm font-semibold text-gray-900">{tender.ministry}</p>
+                            </div>
+                        )}
+                        {tender.department && (
+                            <div className="p-4 bg-[#F8FAFC] rounded-[16px] border border-gray-100">
+                                <p className="text-[11px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Department</p>
+                                <p className="text-sm font-semibold text-gray-900">{tender.department}</p>
+                            </div>
+                        )}
+                        {tender.items && (
+                            <div className="p-4 bg-[#F8FAFC] rounded-[16px] border border-gray-100">
+                                <p className="text-[11px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Items</p>
+                                <p className="text-sm font-semibold text-gray-900 leading-relaxed">{tender.items}</p>
+                            </div>
+                        )}
 
                         {/* Quick Metrics Grid */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.1 }}
-                            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
+                            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4"
                         >
-                            {/* Tender Value */}
+                            {/* Bid Start Date */}
                             <div className="bg-[#F4F7FF] rounded-[24px] p-6 border border-transparent hover:border-blue-100 transition-colors">
                                 <div className="flex items-center gap-2 text-blue-400 font-bold mb-3 text-[11px] tracking-wider uppercase">
                                     <div className="p-1.5 bg-blue-100 rounded-full text-blue-500">
-                                        <IndianRupee className="w-3 h-3" strokeWidth={3} />
+                                        <Calendar className="w-3 h-3" strokeWidth={3} />
                                     </div>
-                                    Tender Value
+                                    Bid Start Date
                                 </div>
-                                <div className="text-[26px] font-bold text-[#4F46E5] tracking-tight">{tender.tenderValue}</div>
+                                <div className="text-[26px] font-bold text-[#4F46E5] tracking-tight">{tender.bidStartDate}</div>
                             </div>
 
                             {/* Bid End Date */}
@@ -118,30 +153,9 @@ export function Analysis1() {
                                     Bid End Date
                                 </div>
                                 <div className="text-[26px] font-bold text-[#F97316] tracking-tight">{tender.bidEndDate}</div>
-                                <div className="text-orange-500 text-[11px] font-bold mt-1 ">{tender.daysRemaining} days remaining</div>
                             </div>
 
-                            {/* Published Date */}
-                            <div className="bg-[#F8FAFC] rounded-[24px] p-6 border border-gray-100">
-                                <div className="flex items-center gap-2 text-gray-400 font-bold mb-3 text-[11px] tracking-wider uppercase">
-                                    <div className="p-1.5 bg-gray-100 rounded-[8px] text-gray-500">
-                                        <Calendar className="w-3 h-3" strokeWidth={3} />
-                                    </div>
-                                    Published Date
-                                </div>
-                                <div className="text-[17px] font-bold text-gray-900 mt-5">{tender.publishedDate}</div>
-                            </div>
 
-                            {/* Bid Opening */}
-                            <div className="bg-[#F8FAFC] rounded-[24px] p-6 border border-gray-100">
-                                <div className="flex items-center gap-2 text-gray-400 font-bold mb-3 text-[11px] tracking-wider uppercase">
-                                    <div className="p-1.5 bg-gray-100 rounded-[8px] text-gray-500">
-                                        <Clock className="w-3 h-3" strokeWidth={3} />
-                                    </div>
-                                    Bid Opening
-                                </div>
-                                <div className="text-[17px] font-bold text-gray-900 mt-5">{tender.bidOpening}</div>
-                            </div>
 
                             {/* Quantity */}
                             <div className="bg-[#F8FAFC] rounded-[24px] p-6 border border-gray-100">

@@ -17,7 +17,7 @@ export function SignupPage() {
 
     const isFormValid =
         formData.name.trim() !== "" &&
-        formData.phone.trim().length >= 10 &&
+        formData.phone.trim().length === 10 &&
         formData.email.trim() !== "" &&
         formData.email.includes("@");
 
@@ -103,9 +103,13 @@ export function SignupPage() {
                                     className="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                                     id="phone"
                                     type="tel"
-                                    placeholder="+91 98765 43210"
+                                    placeholder="98765 43210"
+                                    maxLength={10}
                                     value={formData.phone}
-                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    onChange={(e) => {
+                                        const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                        setFormData({ ...formData, phone: value });
+                                    }}
                                 />
                             </div>
                         </div>
