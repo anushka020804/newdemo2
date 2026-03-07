@@ -77,8 +77,8 @@ export function subscribeToAnalysisResult(
     onResult: (data: any) => void,
     onError: (err: any) => void,
 ): () => void {
-    const NEST_API_URL = (import.meta as any).env?.VITE_NEST_API_URL || 'http://localhost:3000';
-    const url = `${NEST_API_URL}/tender-results/${encodeURIComponent(bidNumber)}/stream`;
+    const baseURL = axiosInstance.defaults.baseURL || 'http://localhost:3000';
+    const url = `${baseURL}/tender-results/${encodeURIComponent(bidNumber)}/stream`;
     const eventSource = new EventSource(url);
     let received = false;
 
