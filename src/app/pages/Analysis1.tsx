@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useNavigate, useLocation } from "react-router";
 import { motion } from "motion/react";
 import {
@@ -11,22 +11,25 @@ import {
     Loader2,
     Download
 } from "lucide-react";
+import { applyBidAnalysis, subscribeToAnalysisResult } from "../api/bids";
 
 export function Analysis1() {
     const navigate = useNavigate();
     const location = useLocation();
     const { id: tenderId } = useParams();
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [statusText, setStatusText] = useState("");
+    const cleanupRef = useRef<(() => void) | null>(null);
 
     const passedTender = location.state?.tender;
     const rawBid = passedTender?.rawBid || {};
 
-    // Use the ID from URL if available, otherwise fallback to "1"
+    // Use the database ID from URL for API calls
     const tender = {
         id: tenderId || "1",
         title: rawBid.items || "Industrial Valves Supply - Karnataka PWD",
         organization: rawBid.organization || passedTender?.organization || "Bharat Heavy Electrical Limited (BHEL)",
-        referenceId: tenderId?.startsWith("GEM") ? tenderId : `TND-${tenderId || "1"}`,
+        referenceId: rawBid.bidNumber || passedTender?.tenderNumber || `TND-${tenderId || "1"}`,
         ministry: rawBid.ministry || '',
         department: rawBid.department || '',
         items: rawBid.items || '',
@@ -37,11 +40,54 @@ export function Analysis1() {
         hsnCode: rawBid.hsnCode || "85019000"
     }
 
-    const handleStartAnalysis = () => {
+    const handleStartAnalysis = async () => {
         setIsAnalyzing(true);
-        setTimeout(() => {
-            navigate(`/tender/${encodeURIComponent(tender.id)}`, { state: { tender: passedTender } });
-        }, 2000); // 2-second buffer
+        setStatusText("Submitting tender for analysis...");
+        try {
+            // Step 1: Fire-and-forget POST to start the pipeline
+            const response = await applyBidAnalysis(tender.id);
+            const bidNumber = response.bidNumber;
+            console.log('[Analysis1] Analysis queued:', response);
+
+            if (!bidNumber) {
+                throw new Error("No bidNumber returned from API");
+            }
+
+            // Step 2: Subscribe to SSE for real-time results
+            setStatusText("AI is analyzing the tender document... This may take 1-3 minutes.");
+            cleanupRef.current = subscribeToAnalysisResult(
+                bidNumber,
+                (result) => {
+                    console.log('[Analysis1] SSE result received:', result);
+                    cleanupRef.current = null;
+                    setIsAnalyzing(false);
+                    setStatusText("");
+
+                    if (result.status === 'failed') {
+                        setStatusText(`Analysis failed: ${result.error || 'Unknown error'}. Please try again.`);
+                        setIsAnalyzing(false);
+                        return;
+                    }
+
+                    navigate(`/tender/${tender.id}`, {
+                        state: {
+                            tender: passedTender,
+                            analysisResult: result,
+                        },
+                    });
+                },
+                (err) => {
+                    console.error('[Analysis1] SSE error:', err);
+                    cleanupRef.current = null;
+                    setStatusText("Connection lost. Please try again.");
+                    setIsAnalyzing(false);
+                },
+            );
+        } catch (error) {
+            console.error("Failed to start analysis:", error);
+            setStatusText("Failed to start analysis. Please try again.");
+            setIsAnalyzing(false);
+        }
     };
 
     return (
@@ -78,20 +124,24 @@ export function Analysis1() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}
-                            className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-8 flex items-center gap-6"
+                            className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-5 mb-5 flex items-center gap-5"
                         >
                             <div className="w-16 h-16 bg-[#3B82F6] rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm">
                                 <Building2 className="w-8 h-8 text-white" />
                             </div>
                             <div className="flex-1">
                                 <h2 className="text-2xl font-bold text-gray-900 mb-1">{rawBid.bidNumber || tender.referenceId}</h2>
+                                {tender.items && (
+                                    <div className="text-[15px] font-extrabold text-emerald-800 line-clamp-2 mt-1 mb-2" title={tender.items}>
+                                        Items: {tender.items}
+                                    </div>
+                                )}
                                 <div className="flex items-center gap-2">
                                     <span className="p-1 bg-[#EFF6FF] text-[#3B82F6] rounded">
                                         <Building2 className="w-3.5 h-3.5" />
                                     </span>
-                                    <p className="text-sm font-medium text-[#3B82F6]">{tender.organization}</p>
+                                    <p className="text-sm font-medium text-[#3B82F6]">Buyer: {tender.organization}</p>
                                 </div>
-                                <p className="text-xs text-gray-400 font-medium mt-1.5 tracking-wide">Tender ID: {tender.referenceId}</p>
                             </div>
                             {tender.bidUrl && (
                                 <a
@@ -106,77 +156,67 @@ export function Analysis1() {
                             )}
                         </motion.div>
 
-                        {/* Info Cards */}
-                        {tender.ministry && (
-                            <div className="p-4 bg-[#FAFAFF] rounded-[16px] border border-[#EEF2FF]">
-                                <p className="text-[11px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Ministry</p>
-                                <p className="text-sm font-semibold text-gray-900">{tender.ministry}</p>
+                        {/* Info Cards Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                            {tender.ministry && (
+                                <div className="p-2.5 bg-[#FAFAFF] rounded-[12px] border border-[#EEF2FF]">
+                                    <p className="text-[10px] font-bold text-gray-400 mb-0.5 uppercase tracking-wider">Ministry</p>
+                                    <p className="text-sm font-semibold text-gray-900">{tender.ministry}</p>
+                                </div>
+                            )}
+                            {tender.department && (
+                                <div className="p-2.5 bg-[#F8FAFC] rounded-[12px] border border-gray-100">
+                                    <p className="text-[10px] font-bold text-gray-400 mb-0.5 uppercase tracking-wider">Department</p>
+                                    <p className="text-sm font-semibold text-gray-900">{tender.department}</p>
+                                </div>
+                            )}
+                            <div className="p-2.5 bg-[#F8FAFC] rounded-[12px] border border-gray-100">
+                                <div className="flex items-center gap-1.5 text-gray-400 font-bold mb-1 text-[10px] tracking-wider uppercase">
+                                    <div className="p-1 bg-gray-100 rounded-[6px] text-gray-500">
+                                        <FileCode2 className="w-3 h-3" strokeWidth={3} />
+                                    </div>
+                                    HSN Code
+                                </div>
+                                <div className="text-sm font-bold text-gray-900 mt-0.5">{tender.hsnCode?.toString().replace(/\.0$/, "")}</div>
                             </div>
-                        )}
-                        {tender.department && (
-                            <div className="p-4 bg-[#F8FAFC] rounded-[16px] border border-gray-100">
-                                <p className="text-[11px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Department</p>
-                                <p className="text-sm font-semibold text-gray-900">{tender.department}</p>
+                            <div className="p-2.5 bg-[#F8FAFC] rounded-[12px] border border-gray-100">
+                                <div className="flex items-center gap-1.5 text-gray-400 font-bold mb-1 text-[10px] tracking-wider uppercase">
+                                    <div className="p-1 bg-gray-100 rounded-[6px] text-gray-500">
+                                        <Package className="w-3 h-3" strokeWidth={3} />
+                                    </div>
+                                    Quantity
+                                </div>
+                                <div className="text-sm font-bold text-gray-900 mt-0.5">{tender.quantity}</div>
                             </div>
-                        )}
-                        {tender.items && (
-                            <div className="p-4 bg-[#F8FAFC] rounded-[16px] border border-gray-100">
-                                <p className="text-[11px] font-bold text-gray-400 mb-1 uppercase tracking-wider">Items</p>
-                                <p className="text-sm font-semibold text-gray-900 leading-relaxed">{tender.items}</p>
-                            </div>
-                        )}
+                        </div>
 
                         {/* Quick Metrics Grid */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.1 }}
-                            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4"
+                            className="grid grid-cols-1 sm:grid-cols-2 gap-3"
                         >
                             {/* Bid Start Date */}
-                            <div className="bg-[#F4F7FF] rounded-[24px] p-6 border border-transparent hover:border-blue-100 transition-colors">
-                                <div className="flex items-center gap-2 text-blue-400 font-bold mb-3 text-[11px] tracking-wider uppercase">
+                            <div className="bg-[#F4F7FF] rounded-[16px] p-4 border border-transparent hover:border-blue-100 transition-colors">
+                                <div className="flex items-center gap-2 text-blue-400 font-bold mb-1 text-[10px] tracking-wider uppercase">
                                     <div className="p-1.5 bg-blue-100 rounded-full text-blue-500">
                                         <Calendar className="w-3 h-3" strokeWidth={3} />
                                     </div>
                                     Bid Start Date
                                 </div>
-                                <div className="text-[26px] font-bold text-[#4F46E5] tracking-tight">{tender.bidStartDate}</div>
+                                <div className="text-[20px] font-bold text-[#4F46E5] tracking-tight">{tender.bidStartDate}</div>
                             </div>
 
                             {/* Bid End Date */}
-                            <div className="bg-[#FFF4ED] rounded-[24px] p-6 border border-transparent hover:border-orange-100 transition-colors">
-                                <div className="flex items-center gap-2 text-orange-400 font-bold mb-3 text-[11px] tracking-wider uppercase">
+                            <div className="bg-[#FFF4ED] rounded-[16px] p-4 border border-transparent hover:border-orange-100 transition-colors">
+                                <div className="flex items-center gap-2 text-orange-400 font-bold mb-1 text-[10px] tracking-wider uppercase">
                                     <div className="p-1.5 bg-orange-100 rounded-full text-orange-500">
                                         <Calendar className="w-3 h-3" strokeWidth={3} />
                                     </div>
                                     Bid End Date
                                 </div>
-                                <div className="text-[26px] font-bold text-[#F97316] tracking-tight">{tender.bidEndDate}</div>
-                            </div>
-
-
-
-                            {/* Quantity */}
-                            <div className="bg-[#F8FAFC] rounded-[24px] p-6 border border-gray-100">
-                                <div className="flex items-center gap-2 text-gray-400 font-bold mb-3 text-[11px] tracking-wider uppercase">
-                                    <div className="p-1.5 bg-gray-100 rounded-[8px] text-gray-500">
-                                        <Package className="w-3 h-3" strokeWidth={3} />
-                                    </div>
-                                    Quantity
-                                </div>
-                                <div className="text-[17px] font-bold text-gray-900 mt-5">{tender.quantity}</div>
-                            </div>
-
-                            {/* HSN Code */}
-                            <div className="bg-[#F8FAFC] rounded-[24px] p-6 border border-gray-100">
-                                <div className="flex items-center gap-2 text-gray-400 font-bold mb-3 text-[11px] tracking-wider uppercase">
-                                    <div className="p-1.5 bg-gray-100 rounded-[8px] text-gray-500">
-                                        <FileCode2 className="w-3 h-3" strokeWidth={3} />
-                                    </div>
-                                    HSN Code
-                                </div>
-                                <div className="text-[17px] font-bold text-gray-900 mt-5">{tender.hsnCode}</div>
+                                <div className="text-[20px] font-bold text-[#F97316] tracking-tight">{tender.bidEndDate}</div>
                             </div>
                         </motion.div>
                     </div>
@@ -202,7 +242,7 @@ export function Analysis1() {
                                 {isAnalyzing ? (
                                     <>
                                         <Loader2 className="w-5 h-5 animate-spin" />
-                                        Analyzing Data...
+                                        Analyzing...
                                     </>
                                 ) : (
                                     <>
@@ -211,6 +251,15 @@ export function Analysis1() {
                                     </>
                                 )}
                             </button>
+
+                            {statusText && (
+                                <p className={`text-[12px] text-center font-medium px-2 mb-2 ${
+                                    statusText.includes('failed') || statusText.includes('Failed') || statusText.includes('lost')
+                                        ? 'text-red-500' : 'text-blue-500'
+                                }`}>
+                                    {statusText}
+                                </p>
+                            )}
 
                             <p className="text-[11px] text-gray-400 text-center font-medium px-2">
                                 Get detailed eligibility analysis based on your business profile.

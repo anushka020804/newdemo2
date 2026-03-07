@@ -50,15 +50,14 @@ export function AppNavbar() {
 
           <nav className="hidden lg:flex items-center gap-6 shrink-0">
             <button
-              onClick={() => navigate("/dashboard")}
-              className={`transition-colors flex items-center gap-2 ${
-                isActive("/dashboard") ? "text-indigo-600 font-semibold" : "text-gray-700 hover:text-indigo-600"
-              }`}
+              onClick={() => navigate("/dashboard", { state: { filter: "all" } })}
+              className={`transition-colors flex items-center gap-2 ${isActive("/dashboard") ? "text-indigo-600 font-semibold" : "text-gray-700 hover:text-indigo-600"
+                }`}
             >
               <Home className="w-4 h-4" />
               Home
             </button>
-            <button
+            {/* <button
               onClick={() => navigate("/tenders", { state: { filter: "all" } })}
               className={`transition-colors flex items-center gap-2 ${
                 isActive("/tenders") ? "text-indigo-600 font-semibold" : "text-gray-700 hover:text-indigo-600"
@@ -66,19 +65,18 @@ export function AppNavbar() {
             >
               <TrendingUp className="w-4 h-4" />
               My Tenders
-            </button>
-            <button
+            </button> */}
+            {/* <button
               onClick={() => navigate("/tenders", { state: { filter: "active" } })}
               className="text-gray-700 hover:text-indigo-600 transition-colors flex items-center gap-2"
             >
               <Sparkles className="w-4 h-4" />
               Matched Tenders
-            </button>
+            </button> */}
             <button
               onClick={() => navigate("/saved-bids")}
-              className={`transition-colors flex items-center gap-2 ${
-                isActive("/saved-bids") ? "text-indigo-600 font-semibold" : "text-gray-700 hover:text-indigo-600"
-              }`}
+              className={`transition-colors flex items-center gap-2 ${isActive("/saved-bids") ? "text-indigo-600 font-semibold" : "text-gray-700 hover:text-indigo-600"
+                }`}
             >
               <Bookmark className="w-4 h-4" />
               Saved Tenders

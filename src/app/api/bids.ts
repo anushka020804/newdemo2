@@ -1,6 +1,7 @@
 import axiosInstance from './axiosInstance';
 
 export interface BidResult {
+    id: number;
     bidNumber: string;
     ministry: string;
     organization: string;
@@ -59,4 +60,63 @@ export async function getAllTenders(page = 1, limit = 10): Promise<PaginatedTend
 export async function getMatchedBids(): Promise<BidResult[]> {
     const { data } = await axiosInstance.get('/bid-data/match/customer');
     return data;
+}
+
+/** Trigger or fetch analysis for a specific bid */
+export async function applyBidAnalysis(bidId: string) {
+    const { data } = await axiosInstance.post(`/bid-data/apply/${encodeURIComponent(bidId)}`);
+    return data;
+}
+
+/** 
+ * Subscribe to SSE stream for analysis results.
+ * Returns a cleanup function to abort the connection.
+ */
+export function subscribeToAnalysisResult(
+    bidNumber: string,
+    onResult: (data: any) => void,
+    onError: (err: any) => void,
+): () => void {
+    const NEST_API_URL = (import.meta as any).env?.VITE_NEST_API_URL || 'http://localhost:3000';
+    const url = `${NEST_API_URL}/tender-results/${encodeURIComponent(bidNumber)}/stream`;
+    const eventSource = new EventSource(url);
+    let received = false;
+
+    const handleResult = (raw: string) => {
+        if (received) return;
+        received = true;
+        try {
+            const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+            onResult(data);
+        } catch {
+            onResult(raw);
+        }
+        eventSource.close();
+    };
+
+    // NestJS SSE sends type:'result' → event: result
+    eventSource.addEventListener('result', (event: any) => {
+        handleResult(event.data);
+    });
+
+    // Fallback: some NestJS versions send unnamed events
+    eventSource.onmessage = (event: any) => {
+        // Ignore heartbeat / connected events
+        try {
+            const parsed = JSON.parse(event.data);
+            if (parsed?.type === 'connected' || parsed?.status === 'waiting') return;
+            handleResult(event.data);
+        } catch {
+            // not JSON, ignore
+        }
+    };
+
+    eventSource.onerror = (err) => {
+        if (!received) {
+            onError(err);
+        }
+        eventSource.close();
+    };
+
+    return () => eventSource.close();
 }

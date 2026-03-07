@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
-import HSNChatbot from "../components/HSNChatbot";
-import HSNMasterFinder from "../components/HSNMasterFinder";
 import { Plus, Edit2, Trash2, Check, X, Mail, MessageCircle } from "lucide-react";
 import { saveHsnSetup } from "../api/profile";
 
@@ -274,17 +272,6 @@ export function HSNSetup() {
             </button>
           </div>
 
-          <div className="mt-4 bg-white rounded-xl shadow-[0_2px_10px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
-            <HSNMasterFinder />
-          </div>
-
-        </div>
-
-        {/* Right Column (Chatbot) */}
-        <div className="w-full lg:w-[380px] shrink-0 sticky top-24">
-          <div className="h-[520px]">
-            <HSNChatbot />
-          </div>
         </div>
 
       </div>

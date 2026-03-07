@@ -6,9 +6,6 @@ import {
     Building2,
     Edit,
     CloudUpload,
-    Bot,
-    Send,
-    Paperclip,
     ClipboardList
 } from "lucide-react";
 
@@ -206,7 +203,7 @@ export function BidDocumentPreparation() {
                                     onClick={() => navigate(`/tender/${tenderId}/generated-documents`)}
                                     className="w-full py-4 rounded-[16px] border-2 border-blue-500 text-blue-500 font-bold text-[16px] hover:bg-blue-50 transition-colors"
                                 >
-                                    Generate Bid Document(s)
+                                    Coming Soon! Check Demo Here
                                 </button>
                             </div>
 
@@ -228,50 +225,7 @@ export function BidDocumentPreparation() {
                             Check all saved bids
                         </motion.button>
 
-                        {/* 2. Opportunity X AI Chatbot */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.5, delay: 0.2 }}
-                            className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden flex flex-col h-[670px]"
-                        >
-                            {/* Header */}
-                            <div className="bg-[#4F46E5] text-white p-4 font-bold text-center text-[16px]">
-                                Opportunity X AI
-                            </div>
 
-                            {/* Chat Area */}
-                            <div className="flex-1 p-5 bg-white overflow-y-auto">
-                                <div className="flex gap-3 mb-4">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
-                                        <Bot className="w-4 h-4 text-[#4F46E5]" />
-                                    </div>
-                                    <div className="bg-gray-50 border text-[13px] border-gray-200 rounded-2xl rounded-tl-none p-4 shadow-sm text-gray-800">
-                                        Hey! How can I help you?<br />
-                                        Ask me anything related to this tender.
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Input Area */}
-                            <div className="p-4 bg-white border-t border-gray-100">
-                                <div className="flex items-center gap-3">
-                                    <div className="flex-1 relative">
-                                        <input
-                                            type="text"
-                                            placeholder="Type a message..."
-                                            className="w-full border border-gray-200 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#4F46E5]"
-                                        />
-                                    </div>
-                                    <button className="p-2 text-gray-500 hover:text-[#4F46E5] transition-colors shrink-0">
-                                        <Send className="w-5 h-5" />
-                                    </button>
-                                    <button className="p-2 text-gray-500 hover:text-[#4F46E5] transition-colors shrink-0">
-                                        <Paperclip className="w-5 h-5" />
-                                    </button>
-                                </div>
-                            </div>
-                        </motion.div>
 
                     </div>
                 </div >

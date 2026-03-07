@@ -48,7 +48,8 @@ export const router = createBrowserRouter([
   {
     Component: ProtectedRoute,
     children: [
-      { path: "/dashboard", Component: Dashboard },
+      // { path: "/dashboard", Component: Dashboard },
+      { path: "/dashboard", Component: TenderListing },
       { path: "/tenders", Component: TenderListing },
       { path: "/tender/:id", Component: TenderDetails },
       { path: "/analysis1/:id", Component: Analysis1 },

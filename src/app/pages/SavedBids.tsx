@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { 
+import {
   ArrowLeft,
   FileText,
   Download,
@@ -14,10 +14,12 @@ import {
   AlertCircle,
   X,
   Edit2,
-  Share2
+  Share2,
+  ChevronRight
 } from "lucide-react";
 import { FormalBidDocument } from "../components/FormalBidDocument";
 import { generateFormalBidPDF } from "../utils/generateBidPDF";
+import jsPDF from "jspdf";
 
 interface Bid {
   id: string;
@@ -46,7 +48,7 @@ export function SavedBids() {
   const [bidToDelete, setBidToDelete] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isEditingDocument, setIsEditingDocument] = useState(false);
-  
+
   // State to track saved bids
   const [bids, setBids] = useState<Bid[]>([]);
   const [isoUploaded, setIsoUploaded] = useState(false);
@@ -57,63 +59,42 @@ export function SavedBids() {
     setIsoUploaded(isoStatus === 'true');
   }, []);
 
-  // Initialize bids
+  // Initialize bids from localStorage instead of dummy data
   useEffect(() => {
-    setBids([
-      {
-        id: "1",
-        tenderName: "Industrial Valves Supply - Karnataka PWD",
-        organization: "Karnataka PWD",
-        value: "₹45,00,000",
-        generatedDate: "Feb 4, 2026",
-        submissionDate: "Feb 15, 2026",
-        status: "ready",
-        eligibilityStatus: "eligible",
-        matchScore: 92,
-        documents: [
-          { name: "Technical Bid Document", status: "included", size: "1.2 MB" },
-          { name: "Financial Bid Document", status: "included", size: "0.8 MB" },
-          { name: "Company Registration", status: "included", size: "0.5 MB" },
-          { name: "GST Certificate", status: "included", size: "0.3 MB" },
-          { name: "ISO Certification", status: isoUploaded ? "included" : "missing", size: isoUploaded ? "0.4 MB" : undefined },
-        ]
-      },
-      {
-        id: "2",
-        tenderName: "Steel Fasteners - NHAI",
-        organization: "NHAI",
-        value: "₹82,50,000",
-        generatedDate: "Feb 3, 2026",
-        submissionDate: "Feb 12, 2026",
-        status: "pending-docs",
-        eligibilityStatus: "partially-eligible",
-        matchScore: 78,
-        documents: [
-          { name: "Technical Bid Document", status: "included", size: "1.5 MB" },
-          { name: "Financial Bid Document", status: "included", size: "0.9 MB" },
-          { name: "Company Registration", status: "included", size: "0.5 MB" },
-          { name: "Material Test Certificates", status: "missing" },
-        ]
-      },
-      {
-        id: "3",
-        tenderName: "Railway Equipment - Indian Railways",
-        organization: "Railway Board",
-        value: "₹35,00,000",
-        generatedDate: "Feb 2, 2026",
-        submissionDate: "Feb 20, 2026",
-        status: "ready",
-        eligibilityStatus: "eligible",
-        matchScore: 85,
-        documents: [
-          { name: "Technical Bid Document", status: "included", size: "1.1 MB" },
-          { name: "Financial Bid Document", status: "included", size: "0.7 MB" },
-          { name: "Company Registration", status: "included", size: "0.5 MB" },
-          { name: "GST Certificate", status: "included", size: "0.3 MB" },
-          { name: "Railway Experience Certificate", status: "included", size: "0.6 MB" },
-        ]
-      },
-    ]);
+    try {
+      const saved = localStorage.getItem('savedTenders');
+      if (saved) {
+        const parsedTenders = JSON.parse(saved);
+
+        // Transform standard Tenders into the Bid format expected by this page
+        // or just map them to the same structure
+        const transformedBids: Bid[] = parsedTenders.map((t: any) => ({
+          id: t.id,
+          tenderName: t.title || t.items || t.tenderNumber || "Saved Tender",
+          organization: t.organization || "Unknown Organization",
+          value: t.value || "Not Specified",
+          generatedDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+          submissionDate: t.submissionDate || t.submissionDeadline || "TBA",
+          status: "ready",
+          eligibilityStatus: "eligible",
+          matchScore: 90, // Default high score for saved tenders
+          documents: [
+            { name: "Technical Bid Document", status: "included", size: "1.2 MB" },
+            { name: "Financial Bid Document", status: "included", size: "0.8 MB" },
+            { name: "Company Registration", status: "included", size: "0.5 MB" },
+            { name: "GST Certificate", status: "included", size: "0.3 MB" },
+            { name: "ISO Certification", status: isoUploaded ? "included" : "missing", size: isoUploaded ? "0.4 MB" : undefined },
+          ]
+        }));
+
+        setBids(transformedBids);
+      } else {
+        setBids([]);
+      }
+    } catch (e) {
+      console.error("Error parsing saved tenders:", e);
+      setBids([]);
+    }
   }, [isoUploaded]);
 
   const handlePrintBid = () => {
@@ -128,7 +109,24 @@ export function SavedBids() {
 
   const handleConfirmDelete = () => {
     // Actually delete the bid from the list
-    setBids(prevBids => prevBids.filter(bid => bid.id !== bidToDelete));
+    setBids(prevBids => {
+      const updated = prevBids.filter(bid => bid.id !== bidToDelete);
+
+      // Keep localStorage in sync
+      try {
+        const saved = localStorage.getItem('savedTenders');
+        if (saved) {
+          const parsedTenders = JSON.parse(saved);
+          const newSaved = parsedTenders.filter((t: any) => t.id !== bidToDelete);
+          localStorage.setItem('savedTenders', JSON.stringify(newSaved));
+        }
+      } catch (e) {
+        console.error("Failed to update localStorage on delete", e);
+      }
+
+      return updated;
+    });
+
     setShowDeleteConfirm(false);
     setBidToDelete(null);
   };
@@ -251,7 +249,7 @@ Generated by OpportunityX - Qistonpe
   const handleDownloadPDFBid_OLD = (bid: Bid) => {
     const doc = new jsPDF();
     let currentPage = 1;
-    
+
     // Helper function to add page numbers
     const addPageNumber = () => {
       doc.setFontSize(9);
@@ -259,7 +257,7 @@ Generated by OpportunityX - Qistonpe
       doc.text(`Page ${currentPage}`, 105, 285, { align: 'center' });
       currentPage++;
     };
-    
+
     // Helper function to check if we need a new page
     const checkNewPage = (requiredSpace: number, currentY: number) => {
       if (currentY + requiredSpace > 270) {
@@ -269,13 +267,13 @@ Generated by OpportunityX - Qistonpe
       }
       return currentY;
     };
-    
+
     // ==================== PAGE 1: COVER PAGE ====================
-    
+
     // Cover page background
     doc.setFillColor(79, 70, 229);
     doc.rect(0, 0, 210, 297, 'F');
-    
+
     // Company Logo Area
     doc.setFillColor(255, 255, 255);
     doc.roundedRect(30, 30, 150, 50, 5, 5, 'F');
@@ -286,14 +284,14 @@ Generated by OpportunityX - Qistonpe
     doc.setFontSize(12);
     doc.setFont(undefined, 'normal');
     doc.text('Powered by Qistonpe', 105, 65, { align: 'center' });
-    
+
     // Document Title
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(32);
     doc.setFont(undefined, 'bold');
     doc.text('FORMAL BID', 105, 120, { align: 'center' });
     doc.text('DOCUMENT', 105, 135, { align: 'center' });
-    
+
     // Tender name in box
     doc.setFillColor(255, 255, 255);
     doc.setDrawColor(255, 255, 255);
@@ -304,13 +302,13 @@ Generated by OpportunityX - Qistonpe
     const tenderNameLines = doc.splitTextToSize(bid.tenderName, 150);
     const startY = 165 + (40 - tenderNameLines.length * 7) / 2;
     doc.text(tenderNameLines, 105, startY, { align: 'center' });
-    
+
     // Organization
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(16);
     doc.setFont(undefined, 'normal');
     doc.text(bid.organization, 105, 215, { align: 'center' });
-    
+
     // Match Score Badge
     doc.setFillColor(34, 197, 94);
     doc.circle(105, 240, 15, 'F');
@@ -320,30 +318,30 @@ Generated by OpportunityX - Qistonpe
     doc.text(`${bid.matchScore}%`, 105, 243, { align: 'center' });
     doc.setFontSize(10);
     doc.text('Match Score', 105, 250, { align: 'center' });
-    
+
     // Date
     doc.setFontSize(11);
     doc.setFont(undefined, 'normal');
     doc.text(`Generated: ${bid.generatedDate}`, 105, 270, { align: 'center' });
     doc.text(`Submission Deadline: ${bid.submissionDate}`, 105, 278, { align: 'center' });
-    
+
     addPageNumber();
     doc.addPage();
-    
+
     // ==================== PAGE 2: TABLE OF CONTENTS ====================
-    
+
     let yPos = 30;
-    
+
     doc.setFillColor(79, 70, 229);
     doc.rect(0, 0, 210, 15, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(18);
     doc.setFont(undefined, 'bold');
     doc.text('TABLE OF CONTENTS', 20, 10);
-    
+
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(12);
-    
+
     const tocItems = [
       { title: '1. Executive Summary', page: 3 },
       { title: '2. Company Profile', page: 3 },
@@ -353,37 +351,37 @@ Generated by OpportunityX - Qistonpe
       { title: '6. Terms & Conditions', page: 6 },
       { title: '7. Declarations', page: 7 },
     ];
-    
+
     tocItems.forEach((item, index) => {
       doc.setFont(undefined, 'normal');
       doc.text(item.title, 30, yPos);
       doc.setFont(undefined, 'bold');
       doc.text(item.page.toString(), 180, yPos, { align: 'right' });
-      
+
       // Dotted line
       doc.setDrawColor(200, 200, 200);
       doc.setLineDash([1, 2]);
       doc.line(120, yPos - 2, 175, yPos - 2);
       doc.setLineDash([]);
-      
+
       yPos += 12;
     });
-    
+
     // Bid Details Box
     yPos += 20;
     doc.setFillColor(245, 247, 250);
     doc.roundedRect(20, yPos, 170, 80, 5, 5, 'F');
-    
+
     yPos += 15;
     doc.setFontSize(14);
     doc.setFont(undefined, 'bold');
     doc.setTextColor(79, 70, 229);
     doc.text('BID DETAILS', 30, yPos);
-    
+
     yPos += 12;
     doc.setFontSize(11);
     doc.setTextColor(0, 0, 0);
-    
+
     const bidDetails = [
       { label: 'Tender Reference No:', value: `TND/${new Date().getFullYear()}/` + Math.floor(Math.random() * 10000) },
       { label: 'Tender Value:', value: bid.value },
@@ -391,7 +389,7 @@ Generated by OpportunityX - Qistonpe
       { label: 'EMD Amount:', value: '₹' + (parseInt(bid.value.replace(/[^0-9]/g, '')) * 0.02 / 100).toFixed(2) },
       { label: 'Contact Person:', value: 'Business Development Team' },
     ];
-    
+
     bidDetails.forEach(detail => {
       doc.setFont(undefined, 'bold');
       doc.text(detail.label, 30, yPos);
@@ -399,14 +397,14 @@ Generated by OpportunityX - Qistonpe
       doc.text(detail.value, 95, yPos);
       yPos += 10;
     });
-    
+
     addPageNumber();
     doc.addPage();
-    
+
     // ==================== PAGE 3: EXECUTIVE SUMMARY & COMPANY PROFILE ====================
-    
+
     yPos = 30;
-    
+
     // Page Header
     doc.setFillColor(79, 70, 229);
     doc.rect(0, 0, 210, 15, 'F');
@@ -414,7 +412,7 @@ Generated by OpportunityX - Qistonpe
     doc.setFontSize(10);
     doc.text('OpportunityX - Formal Bid Document', 20, 10);
     doc.text(bid.tenderName, 190, 10, { align: 'right' });
-    
+
     // Section 1: Executive Summary
     doc.setFillColor(79, 70, 229);
     doc.roundedRect(20, yPos - 5, 170, 10, 2, 2, 'F');
@@ -423,7 +421,7 @@ Generated by OpportunityX - Qistonpe
     doc.setFont(undefined, 'bold');
     doc.text('1. EXECUTIVE SUMMARY', 25, yPos + 2);
     yPos += 15;
-    
+
     doc.setTextColor(0, 0, 0);
     doc.setFont(undefined, 'normal');
     doc.setFontSize(11);
@@ -431,9 +429,9 @@ Generated by OpportunityX - Qistonpe
     const execLines = doc.splitTextToSize(execSummary, 170);
     doc.text(execLines, 20, yPos);
     yPos += execLines.length * 5 + 15;
-    
+
     yPos = checkNewPage(50, yPos);
-    
+
     // Section 2: Company Profile
     doc.setFillColor(79, 70, 229);
     doc.roundedRect(20, yPos - 5, 170, 10, 2, 2, 'F');
@@ -442,7 +440,7 @@ Generated by OpportunityX - Qistonpe
     doc.setFont(undefined, 'bold');
     doc.text('2. COMPANY PROFILE', 25, yPos + 2);
     yPos += 15;
-    
+
     doc.setTextColor(0, 0, 0);
     doc.setFont(undefined, 'normal');
     doc.setFontSize(11);
@@ -450,14 +448,14 @@ Generated by OpportunityX - Qistonpe
     const companyLines = doc.splitTextToSize(companyProfile, 170);
     doc.text(companyLines, 20, yPos);
     yPos += companyLines.length * 5 + 10;
-    
+
     addPageNumber();
     doc.addPage();
-    
+
     // ==================== PAGE 4: TECHNICAL PROPOSAL ====================
-    
+
     yPos = 30;
-    
+
     // Page Header
     doc.setFillColor(79, 70, 229);
     doc.rect(0, 0, 210, 15, 'F');
@@ -465,7 +463,7 @@ Generated by OpportunityX - Qistonpe
     doc.setFontSize(10);
     doc.text('OpportunityX - Formal Bid Document', 20, 10);
     doc.text(bid.tenderName, 190, 10, { align: 'right' });
-    
+
     // Section 3: Technical Proposal
     doc.setFillColor(79, 70, 229);
     doc.roundedRect(20, yPos - 5, 170, 10, 2, 2, 'F');
@@ -474,25 +472,25 @@ Generated by OpportunityX - Qistonpe
     doc.setFont(undefined, 'bold');
     doc.text('3. TECHNICAL PROPOSAL', 25, yPos + 2);
     yPos += 15;
-    
+
     doc.setTextColor(0, 0, 0);
     doc.setFont(undefined, 'bold');
     doc.setFontSize(12);
     doc.text('3.1 Scope of Work', 20, yPos);
     yPos += 10;
-    
+
     doc.setFont(undefined, 'normal');
     doc.setFontSize(11);
     const scopeText = `We propose to supply/execute the complete scope of work as specified in the tender document. Our approach includes comprehensive planning, quality assurance, and timely execution to ensure complete satisfaction of all requirements.`;
     const scopeLines = doc.splitTextToSize(scopeText, 170);
     doc.text(scopeLines, 20, yPos);
     yPos += scopeLines.length * 5 + 12;
-    
+
     doc.setFont(undefined, 'bold');
     doc.setFontSize(12);
     doc.text('3.2 Technical Specifications Compliance', 20, yPos);
     yPos += 10;
-    
+
     doc.setFont(undefined, 'normal');
     doc.setFontSize(11);
     doc.text('• Full compliance with technical specifications as per tender document', 25, yPos);
@@ -503,28 +501,28 @@ Generated by OpportunityX - Qistonpe
     yPos += 7;
     doc.text('• Adherence to relevant IS/BIS/ISO standards', 25, yPos);
     yPos += 15;
-    
+
     doc.setFont(undefined, 'bold');
     doc.setFontSize(12);
     doc.text('3.3 Implementation Timeline', 20, yPos);
     yPos += 10;
-    
+
     doc.setFont(undefined, 'normal');
     doc.setFontSize(11);
-    
+
     // Timeline table
     doc.setFillColor(245, 247, 250);
     doc.rect(20, yPos, 170, 50, 'F');
     doc.setDrawColor(200, 200, 200);
     doc.rect(20, yPos, 170, 50);
-    
+
     const phases = [
       { phase: 'Phase 1: Planning & Mobilization', duration: '2 weeks' },
       { phase: 'Phase 2: Procurement & Setup', duration: '4 weeks' },
       { phase: 'Phase 3: Execution', duration: '8 weeks' },
       { phase: 'Phase 4: Testing & Handover', duration: '2 weeks' },
     ];
-    
+
     let tableY = yPos + 8;
     doc.setFont(undefined, 'bold');
     doc.text('Phase', 25, tableY);
@@ -532,35 +530,35 @@ Generated by OpportunityX - Qistonpe
     tableY += 5;
     doc.line(20, tableY, 190, tableY);
     tableY += 8;
-    
+
     doc.setFont(undefined, 'normal');
     phases.forEach(phase => {
       doc.text(phase.phase, 25, tableY);
       doc.text(phase.duration, 150, tableY);
       tableY += 8;
     });
-    
+
     yPos += 60;
-    
+
     doc.setFont(undefined, 'bold');
     doc.setFontSize(12);
     doc.text('3.4 Quality Assurance', 20, yPos);
     yPos += 10;
-    
+
     doc.setFont(undefined, 'normal');
     doc.setFontSize(11);
     const qaText = `Our quality management system ensures strict adherence to specifications. All deliverables will undergo rigorous testing and inspection before submission. We maintain comprehensive documentation and provide quality certificates as required.`;
     const qaLines = doc.splitTextToSize(qaText, 170);
     doc.text(qaLines, 20, yPos);
     yPos += qaLines.length * 5 + 10;
-    
+
     addPageNumber();
     doc.addPage();
-    
+
     // ==================== PAGE 5: FINANCIAL PROPOSAL ====================
-    
+
     yPos = 30;
-    
+
     // Page Header
     doc.setFillColor(79, 70, 229);
     doc.rect(0, 0, 210, 15, 'F');
@@ -568,7 +566,7 @@ Generated by OpportunityX - Qistonpe
     doc.setFontSize(10);
     doc.text('OpportunityX - Formal Bid Document', 20, 10);
     doc.text(bid.tenderName, 190, 10, { align: 'right' });
-    
+
     // Section 4: Financial Proposal
     doc.setFillColor(79, 70, 229);
     doc.roundedRect(20, yPos - 5, 170, 10, 2, 2, 'F');
@@ -577,45 +575,45 @@ Generated by OpportunityX - Qistonpe
     doc.setFont(undefined, 'bold');
     doc.text('4. FINANCIAL PROPOSAL', 25, yPos + 2);
     yPos += 15;
-    
+
     doc.setTextColor(0, 0, 0);
     doc.setFont(undefined, 'bold');
     doc.setFontSize(12);
     doc.text('4.1 Price Breakdown', 20, yPos);
     yPos += 12;
-    
+
     // Financial Table
     const baseValue = parseInt(bid.value.replace(/[^0-9]/g, '')) / 100;
     const gstAmount = baseValue * 0.18;
     const totalValue = baseValue + gstAmount;
     const emdAmount = baseValue * 0.02;
-    
+
     doc.setFillColor(245, 247, 250);
     doc.rect(20, yPos, 170, 70, 'F');
     doc.setDrawColor(79, 70, 229);
     doc.setLineWidth(0.5);
     doc.rect(20, yPos, 170, 70);
-    
+
     let finY = yPos + 10;
     doc.setFont(undefined, 'bold');
     doc.setFontSize(11);
     doc.text('Description', 25, finY);
     doc.text('Amount (₹)', 150, finY, { align: 'right' });
-    
+
     doc.setDrawColor(200, 200, 200);
     doc.setLineWidth(0.3);
     doc.line(20, finY + 3, 190, finY + 3);
     finY += 12;
-    
+
     doc.setFont(undefined, 'normal');
-    
+
     const financialItems = [
       { desc: 'Base Bid Value', amount: baseValue.toFixed(2) },
       { desc: 'GST @ 18%', amount: gstAmount.toFixed(2) },
       { desc: 'Total Bid Value (Inclusive of GST)', amount: totalValue.toFixed(2), bold: true },
       { desc: 'EMD Amount (2% of base value)', amount: emdAmount.toFixed(2) },
     ];
-    
+
     financialItems.forEach((item, index) => {
       if (item.bold) {
         doc.setFont(undefined, 'bold');
@@ -626,23 +624,23 @@ Generated by OpportunityX - Qistonpe
         doc.setFont(undefined, 'normal');
         doc.setTextColor(0, 0, 0);
       }
-      
+
       doc.text(item.desc, 25, finY);
       doc.text(item.amount, 185, finY, { align: 'right' });
       finY += 10;
-      
+
       if (item.bold) {
         doc.setTextColor(0, 0, 0);
       }
     });
-    
+
     yPos += 80;
-    
+
     doc.setFont(undefined, 'bold');
     doc.setFontSize(12);
     doc.text('4.2 Payment Terms', 20, yPos);
     yPos += 10;
-    
+
     doc.setFont(undefined, 'normal');
     doc.setFontSize(11);
     const paymentTerms = [
@@ -652,30 +650,30 @@ Generated by OpportunityX - Qistonpe
       '• Payment against milestones with proper documentation',
       '• Final payment after successful completion and acceptance',
     ];
-    
+
     paymentTerms.forEach(term => {
       doc.text(term, 20, yPos);
       yPos += 8;
     });
-    
+
     yPos += 10;
-    
+
     doc.setFont(undefined, 'bold');
     doc.setFontSize(12);
     doc.text('4.3 Validity of Offer', 20, yPos);
     yPos += 10;
-    
+
     doc.setFont(undefined, 'normal');
     doc.setFontSize(11);
     doc.text('This bid remains valid for 90 days from the date of submission.', 20, yPos);
-    
+
     addPageNumber();
     doc.addPage();
-    
+
     // ==================== PAGE 6: COMPLIANCE & TERMS ====================
-    
+
     yPos = 30;
-    
+
     // Page Header
     doc.setFillColor(79, 70, 229);
     doc.rect(0, 0, 210, 15, 'F');
@@ -683,7 +681,7 @@ Generated by OpportunityX - Qistonpe
     doc.setFontSize(10);
     doc.text('OpportunityX - Formal Bid Document', 20, 10);
     doc.text(bid.tenderName, 190, 10, { align: 'right' });
-    
+
     // Section 5: Compliance & Certifications
     doc.setFillColor(79, 70, 229);
     doc.roundedRect(20, yPos - 5, 170, 10, 2, 2, 'F');
@@ -692,11 +690,11 @@ Generated by OpportunityX - Qistonpe
     doc.setFont(undefined, 'bold');
     doc.text('5. COMPLIANCE & CERTIFICATIONS', 25, yPos + 2);
     yPos += 15;
-    
+
     doc.setTextColor(0, 0, 0);
     doc.setFont(undefined, 'normal');
     doc.setFontSize(11);
-    
+
     const certifications = [
       '✓ Company Registration Certificate - Attached',
       '✓ GST Registration Certificate - Attached',
@@ -708,14 +706,14 @@ Generated by OpportunityX - Qistonpe
       '✓ Experience Certificates - Attached',
       '✓ EMD/Bid Security - As per tender requirements',
     ];
-    
+
     certifications.forEach(cert => {
       doc.text(cert, 20, yPos);
       yPos += 8;
     });
-    
+
     yPos += 10;
-    
+
     // Section 6: Terms & Conditions
     doc.setFillColor(79, 70, 229);
     doc.roundedRect(20, yPos - 5, 170, 10, 2, 2, 'F');
@@ -724,11 +722,11 @@ Generated by OpportunityX - Qistonpe
     doc.setFont(undefined, 'bold');
     doc.text('6. TERMS & CONDITIONS', 25, yPos + 2);
     yPos += 15;
-    
+
     doc.setTextColor(0, 0, 0);
     doc.setFont(undefined, 'normal');
     doc.setFontSize(11);
-    
+
     const terms = [
       '1. All terms and conditions of the tender document are accepted without deviation.',
       '2. Delivery/execution timeline as specified in the tender will be strictly adhered to.',
@@ -739,20 +737,20 @@ Generated by OpportunityX - Qistonpe
       '7. We agree to abide by all statutory and regulatory requirements.',
       '8. Performance guarantee and warranty terms as specified will be provided.',
     ];
-    
+
     terms.forEach(term => {
       const termLines = doc.splitTextToSize(term, 165);
       doc.text(termLines, 20, yPos);
       yPos += termLines.length * 6 + 2;
     });
-    
+
     addPageNumber();
     doc.addPage();
-    
+
     // ==================== PAGE 7: DECLARATIONS ====================
-    
+
     yPos = 30;
-    
+
     // Page Header
     doc.setFillColor(79, 70, 229);
     doc.rect(0, 0, 210, 15, 'F');
@@ -760,7 +758,7 @@ Generated by OpportunityX - Qistonpe
     doc.setFontSize(10);
     doc.text('OpportunityX - Formal Bid Document', 20, 10);
     doc.text(bid.tenderName, 190, 10, { align: 'right' });
-    
+
     // Section 7: Declarations
     doc.setFillColor(79, 70, 229);
     doc.roundedRect(20, yPos - 5, 170, 10, 2, 2, 'F');
@@ -769,19 +767,19 @@ Generated by OpportunityX - Qistonpe
     doc.setFont(undefined, 'bold');
     doc.text('7. DECLARATIONS', 25, yPos + 2);
     yPos += 15;
-    
+
     doc.setTextColor(0, 0, 0);
     doc.setFont(undefined, 'normal');
     doc.setFontSize(11);
-    
+
     const declarations = `We hereby declare that:\n\n• All information provided in this bid is true and accurate to the best of our knowledge.\n\n• We have not been blacklisted or debarred by any government organization.\n\n• We have carefully read and understood all terms and conditions of the tender.\n\n• We accept all terms and conditions without any deviation.\n\n• We have the technical and financial capability to execute this project.\n\n• We will provide all required documents and certifications if awarded the contract.\n\n• We understand that any false information may lead to disqualification and legal action.`;
-    
+
     const declarationLines = doc.splitTextToSize(declarations, 170);
     doc.text(declarationLines, 20, yPos);
     yPos += declarationLines.length * 5 + 20;
-    
+
     yPos = checkNewPage(80, yPos);
-    
+
     // Signature Section
     doc.setDrawColor(79, 70, 229);
     doc.setLineWidth(0.5);
@@ -798,7 +796,7 @@ Generated by OpportunityX - Qistonpe
     doc.text('Designation: ____________________', 20, yPos);
     yPos += 8;
     doc.text('Date: ' + new Date().toLocaleDateString('en-GB'), 20, yPos);
-    
+
     // Company Stamp Box
     doc.setDrawColor(200, 200, 200);
     doc.setLineWidth(0.3);
@@ -806,27 +804,27 @@ Generated by OpportunityX - Qistonpe
     doc.setFontSize(9);
     doc.setTextColor(150, 150, 150);
     doc.text('Company Seal/Stamp', 155, yPos - 5, { align: 'center' });
-    
+
     yPos += 25;
-    
+
     // Contact Information
     doc.setFillColor(245, 247, 250);
     doc.roundedRect(20, yPos, 170, 35, 5, 5, 'F');
     yPos += 10;
-    
+
     doc.setTextColor(79, 70, 229);
     doc.setFontSize(12);
     doc.setFont(undefined, 'bold');
     doc.text('CONTACT INFORMATION', 105, yPos, { align: 'center' });
     yPos += 10;
-    
+
     doc.setTextColor(0, 0, 0);
     doc.setFont(undefined, 'normal');
     doc.setFontSize(10);
     doc.text('Email: bids@opportunityx.com | Phone: +91-XXXX-XXXXXX', 105, yPos, { align: 'center' });
     yPos += 6;
     doc.text('Website: www.opportunityx.com', 105, yPos, { align: 'center' });
-    
+
     // Footer
     yPos = 270;
     doc.setDrawColor(79, 70, 229);
@@ -839,9 +837,9 @@ Generated by OpportunityX - Qistonpe
     doc.text('This document is generated by OpportunityX (Qistonpe) - AI-powered tender management platform', 105, yPos, { align: 'center' });
     yPos += 5;
     doc.text(`Generated on: ${new Date().toLocaleString('en-IN')}`, 105, yPos, { align: 'center' });
-    
+
     addPageNumber();
-    
+
     // Save the PDF
     doc.save(`Bid_${bid.tenderName.replace(/[^a-zA-Z0-9]/g, '_')}.pdf`);
   };
@@ -881,79 +879,49 @@ Generated by OpportunityX - Qistonpe
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.05 }}
-                className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100"
+                className="bg-white rounded-2xl shadow-sm p-5 border border-gray-100"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <FileText className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg text-gray-900 mb-1">{bid.tenderName}</h3>
-                        <p className="text-sm text-gray-600">{bid.organization}</p>
-                      </div>
+                  <div className="flex items-start gap-3 flex-1">
+                    <div className="w-12 h-12 bg-[#3B82F6] rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                      <FileText className="w-6 h-6 text-white" />
                     </div>
-
-                    {/* Eligibility Status */}
-                    <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg ${eligibilityConfig.bg} mb-3`}>
-                      <EligibilityIcon className={`w-4 h-4 ${eligibilityConfig.color}`} />
-                      <span className={`text-sm ${eligibilityConfig.color}`}>
-                        {eligibilityConfig.label} - Match Score: {bid.matchScore}%
-                      </span>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-gray-900 mb-1">{bid.tenderName}</h3>
+                      <p className="text-sm font-medium text-[#3B82F6]">{bid.organization}</p>
                     </div>
                   </div>
-                  
-                  <div className={`px-3 py-1.5 rounded-full border ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} text-sm whitespace-nowrap`}>
+
+                  <div className={`px-3 py-1.5 rounded-full border ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border} text-sm font-medium whitespace-nowrap`}>
                     {statusConfig.label}
                   </div>
                 </div>
 
-                {/* Warning for Missing Documents */}
-                {missingDocs.length > 0 && (
-                  <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-                      <div className="flex-1">
-                        <p className="text-sm text-amber-900 mb-1">
-                          <strong>Warning:</strong> You are generating this bid without uploading {missingDocs.length} required document{missingDocs.length > 1 ? 's' : ''}
-                        </p>
-                        <p className="text-sm text-amber-700 mb-2">
-                          Missing: {missingDocs.map(doc => doc.name).join(", ")}
-                        </p>
-                        <p className="text-xs text-amber-600">
-                          You will have to upload {missingDocs.length > 1 ? 'these documents' : 'this document'} manually outside this website before submission.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Tender Value</p>
-                    <p className="text-sm text-gray-900 flex items-center gap-1">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                  <div className="p-2.5 bg-[#F8FAFC] rounded-[12px] border border-gray-100">
+                    <p className="text-[10px] font-bold text-gray-400 mb-0.5 uppercase tracking-wider">Tender Value</p>
+                    <p className="text-sm font-semibold text-gray-900 flex items-center gap-1">
                       <IndianRupee className="w-3 h-3" />
                       {bid.value}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Generated On</p>
-                    <p className="text-sm text-gray-900 flex items-center gap-1">
+                  <div className="p-2.5 bg-[#F8FAFC] rounded-[12px] border border-gray-100">
+                    <p className="text-[10px] font-bold text-gray-400 mb-0.5 uppercase tracking-wider">Generated On</p>
+                    <p className="text-sm font-semibold text-gray-900 flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       {bid.generatedDate}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Submission Date</p>
-                    <p className="text-sm text-gray-900 flex items-center gap-1">
+                  <div className="p-2.5 bg-[#F8FAFC] rounded-[12px] border border-gray-100">
+                    <p className="text-[10px] font-bold text-gray-400 mb-0.5 uppercase tracking-wider">Submission Date</p>
+                    <p className="text-sm font-semibold text-gray-900 flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
                       {bid.submissionDate}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Documents</p>
-                    <p className="text-sm text-gray-900">
+                  <div className="p-2.5 bg-[#F8FAFC] rounded-[12px] border border-gray-100">
+                    <p className="text-[10px] font-bold text-gray-400 mb-0.5 uppercase tracking-wider">Documents</p>
+                    <p className="text-sm font-semibold text-gray-900">
                       {bid.documents.filter(d => d.status === "included").length}/{bid.documents.length} included
                     </p>
                   </div>
@@ -961,31 +929,24 @@ Generated by OpportunityX - Qistonpe
 
                 <div className="flex items-center gap-2 pt-4 border-t border-gray-100">
                   <button
-                    onClick={() => handleViewBidDocument(bid)}
-                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 transition-all shadow-md hover:shadow-lg text-sm"
-                  >
-                    <Eye className="w-4 h-4" />
-                    <span>View Bid Document</span>
-                  </button>
-                  <button
                     onClick={() => handleDownloadPDFBid(bid)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white text-indigo-600 rounded-lg hover:bg-indigo-50 transition-all border border-indigo-200 text-sm"
+                    className="flex items-center gap-2 px-4 py-2 bg-white text-indigo-600 rounded-xl hover:bg-indigo-50 transition-all border border-indigo-200 text-sm font-semibold"
                   >
                     <Download className="w-4 h-4" />
                     <span>Download</span>
                   </button>
-                  <button 
-                    onClick={() => handleStartEdit(bid)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white text-gray-600 rounded-lg hover:bg-gray-50 transition-all border border-gray-200 text-sm"
-                  >
-                    <Edit2 className="w-4 h-4" />
-                    <span>Edit</span>
-                  </button>
                   <button
                     onClick={(e) => handleDeleteClick(bid.id, e)}
-                    className="ml-auto p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="p-2.5 text-blue-600 hover:bg-blue-50 rounded-xl transition-colors border border-blue-200"
                   >
                     <Trash2 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => navigate(`/analysis1/${encodeURIComponent(bid.id)}`, { state: { tender: bids.find(b => b.id === bid.id) } })}
+                    className="ml-auto bg-[#4F46E5] text-white px-6 py-2.5 rounded-xl hover:bg-[#4338CA] transition-colors font-semibold text-sm shadow-sm flex items-center gap-2"
+                  >
+                    View Bid Detail
+                    <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
               </motion.div>
@@ -1032,7 +993,7 @@ Generated by OpportunityX - Qistonpe
                     <X className="w-5 h-5" />
                   </button>
                 </div>
-                
+
                 {/* Document Actions */}
                 <div className="mt-4 flex items-center gap-3">
                   <div className="bg-white/20 rounded-lg px-3 py-2">
@@ -1085,9 +1046,9 @@ Generated by OpportunityX - Qistonpe
                     </div>
                   </div>
                 ) : null}
-                
+
                 <div className={`bg-white rounded-lg p-6 ${isEditingDocument ? 'border-2 border-indigo-300' : ''}`}>
-                  <FormalBidDocument 
+                  <FormalBidDocument
                     tenderName={selectedBid.tenderName}
                     organization={selectedBid.organization}
                     value={selectedBid.value}

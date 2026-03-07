@@ -52,7 +52,7 @@ export function CompleteProfile() {
   const [repoStatus, setRepoStatus] = useState<RepositoryStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [companyId, setCompanyId] = useState<string | null>(null);
-  const [expandedCategories, setExpandedCategories] = useState<string[]>(["REGISTRATION_IDENTITY"]);
+  const [expandedCategories, setExpandedCategories] = useState<string[]>(["REGISTRATION_IDENTITY", "FINANCIAL", "WORK_EXPERIENCE", "CERTIFICATION"]);
   const [uploadingDoc, setUploadingDoc] = useState<string | null>(null); // documentType currently uploading
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [pendingUpload, setPendingUpload] = useState<{ category: string; documentType: string } | null>(null);
