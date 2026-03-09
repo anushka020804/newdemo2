@@ -37,19 +37,14 @@ export function BusinessVerification() {
     address: "",
   });
 
-  // Call RPACPC API directly (since server.cjs is not running and they support CORS)
-  // @ts-ignore
-  const API_BASE_URL = import.meta.env.VITE_API_URL.replace('/bv012', '');
-  // @ts-ignore
-  const PROXY_URL = import.meta.env.VITE_API_URL;
-  const GST_PROXY_URL = `${API_BASE_URL}/get-gst-details`;
+  // Call deployed Express server at 52.66.64.130:5556
+  const API_BASE_URL = 'http://52.66.64.130:5556';
+  const PROXY_URL = `${API_BASE_URL}/api/pan-to-gst`;
+  const GST_PROXY_URL = `${API_BASE_URL}/api/get-gst-details`;
+  const GST_ADVANCE_URL = `${API_BASE_URL}/api/get-gst-details-advance`;
 
   const headers = {
     "Content-Type": "application/json",
-    // @ts-ignore
-    token: import.meta.env.VITE_API_TOKEN,
-    // @ts-ignore
-    secretkey: import.meta.env.VITE_API_SECRET,
   };
 
   async function fetchGstDetails(gstNumber: string) {
@@ -107,7 +102,7 @@ export function BusinessVerification() {
         // Fetch HSN from the new Advance API
         try {
           const hsnRes = await fetch(
-            `${API_BASE_URL}/bv010`,
+            `${API_BASE_URL}/api/get-gst-details-advance`,
             {
               method: "POST",
               headers,
