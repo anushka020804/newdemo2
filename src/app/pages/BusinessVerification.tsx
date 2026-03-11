@@ -15,7 +15,7 @@ export function BusinessVerification() {
     const st = (location.state as any) || {};
     if (st.name) setOwnerName(st.name);
     if (st.email) setEmail(st.email);
-  }, [location.state]);
+  }, [location.pathname, location.key]);
   const [pan, setPan] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);

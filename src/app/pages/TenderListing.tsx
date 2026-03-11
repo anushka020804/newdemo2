@@ -311,7 +311,7 @@ export function TenderListing() {
     if (location.state && location.state.filter) {
       setSelectedStatus(location.state.filter as string);
     }
-  }, [location.state]);
+  }, [location.pathname, location.key]);
 
   const handleTabChange = (tab: "all" | "matched") => {
     setActiveTab(tab);

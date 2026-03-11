@@ -77,7 +77,7 @@ export function SavedBids() {
           submissionDate: t.submissionDate || t.submissionDeadline || "TBA",
           status: "ready",
           eligibilityStatus: "eligible",
-          matchScore: 90, // Default high score for saved tenders
+          matchScore: Math.round(t.eligibility_score ?? t.matchScore ?? 90), // Use actual score or fallback
           documents: [
             { name: "Technical Bid Document", status: "included", size: "1.2 MB" },
             { name: "Financial Bid Document", status: "included", size: "0.8 MB" },
