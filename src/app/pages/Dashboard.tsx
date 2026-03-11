@@ -103,7 +103,7 @@ function StatsCard({
         transition: { duration: 0.2 }
       }}
       onClick={onClick}
-      className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm cursor-pointer relative overflow-hidden group"
+      className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm cursor-pointer relative overflow-hidden group"
     >
       {/* Animated gradient overlay on hover */}
       <motion.div
