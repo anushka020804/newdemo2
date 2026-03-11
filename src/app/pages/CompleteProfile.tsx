@@ -64,9 +64,11 @@ export function CompleteProfile() {
       try {
         const profile = await getProfile();
         const cId = profile?.companies?.[0]?.id;
+        console.log(cId)
         if (cId) {
           setCompanyId(cId);
           const status = await getDocumentStatus(cId);
+          console.log("Document Status Data:", status);
           setRepoStatus(status);
         }
       } catch (err) {
@@ -154,7 +156,7 @@ export function CompleteProfile() {
       />
 
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-50">
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -337,6 +339,18 @@ export function CompleteProfile() {
                                       </span>
                                       {!isUploaded && !isCurrentlyUploading && (
                                         <ChevronRight className="w-3.5 h-3.5 text-gray-300 group-hover/card:text-indigo-400 transition-transform group-hover/card:translate-x-0.5" />
+                                      )}
+                                      {isUploaded && doc.fileUrl && (
+                                        <a
+                                          href={doc.fileUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          onClick={(e) => e.stopPropagation()}
+                                          className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase flex items-center gap-1 transition-colors"
+                                        >
+                                          Show PDF
+                                          <ChevronRight className="w-3 h-3" />
+                                        </a>
                                       )}
                                     </div>
                                   </div>

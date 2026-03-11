@@ -1,12 +1,21 @@
 import { Navigate, Outlet } from 'react-router';
 import { useAuth } from '../context/AuthContext';
+import { AppNavbar } from './AppNavbar';
 
 /**
  * Wraps private pages. Redirects to /login if the user is not authenticated.
+ * Renders a persistent top navigation bar above all protected pages.
  */
 export function ProtectedRoute() {
     const { isAuthenticated } = useAuth();
-    return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
+
+    return (
+        <>
+            <AppNavbar />
+            <Outlet />
+        </>
+    );
 }
 
 /**

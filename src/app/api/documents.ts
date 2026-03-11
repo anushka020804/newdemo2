@@ -5,6 +5,7 @@ export interface DocumentStatus {
     status: 'UPLOADED' | 'PENDING';
     id: string | null;
     fileName: string | null;
+    fileUrl?: string;
     uploadedAt: string | null;
 }
 

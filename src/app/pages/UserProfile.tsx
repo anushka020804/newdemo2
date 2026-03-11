@@ -15,6 +15,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Download,
+  Eye,
   Loader2,
 } from "lucide-react";
 import { getCustomerProfile, CustomerProfile } from "../api/profile";
@@ -72,6 +73,7 @@ export function UserProfile() {
   const docList = docStatus?.categories?.flatMap(cat =>
     cat.documents.map(d => ({
       name: d.documentType,
+      fileUrl: d.fileUrl,
       status: d.status === 'UPLOADED' ? 'verified' as const : 'pending' as const,
       date: d.uploadedAt ? new Date(d.uploadedAt).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) : '-',
     }))
@@ -97,7 +99,7 @@ export function UserProfile() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-50 shadow-sm">
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
@@ -363,7 +365,19 @@ export function UserProfile() {
                         {doc.status === "verified" ? (
                           <>
                             <CheckCircle2 className="w-4 h-4 text-green-500" />
-                            <Download className="w-4 h-4 text-gray-300 hover:text-gray-500 cursor-pointer" />
+                            {doc.fileUrl ? (
+                              <a
+                                href={doc.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-1 text-indigo-500 hover:text-indigo-700 hover:bg-indigo-50 rounded transition-colors"
+                                title="Show PDF"
+                              >
+                                <Eye className="w-4 h-4" />
+                              </a>
+                            ) : (
+                              <Download className="w-4 h-4 text-gray-300 hover:text-gray-500 cursor-pointer" />
+                            )}
                           </>
                         ) : (
                           <AlertTriangle className="w-4 h-4 text-amber-500" />

@@ -61,7 +61,7 @@ export function GeneratedBidDocuments() {
     return (
         <div className="min-h-screen bg-[#F8FAFC]">
             {/* Header */}
-            <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-50">
+            <div className="bg-white border-b border-gray-200 px-6 py-4">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <button
@@ -161,7 +161,7 @@ export function GeneratedBidDocuments() {
                                                 <button className="p-1 hover:text-blue-600 tooltip-trigger" title="View Document">
                                                     <Eye className="w-[18px] h-[18px]" strokeWidth={2.5} />
                                                 </button>
-                                                <button className="p-1 hover:text-gray-700 tooltip-trigger" title="Edit Document">
+                                                <button onClick={() => navigate(`/tender/${tenderId}/final-document-editor`)} className="p-1 hover:text-gray-700 tooltip-trigger" title="Edit Document">
                                                     <Edit2 className="w-[18px] h-[18px] text-gray-500" strokeWidth={2.5} />
                                                 </button>
                                                 <button className="p-1 hover:text-red-500 tooltip-trigger" title="Delete ">
@@ -198,7 +198,7 @@ export function GeneratedBidDocuments() {
                                     Generate More Bid Document(s)
                                 </button>
                                 <button
-                                    onClick={() => navigate(`/tender/${tenderId}/final-document-editor`)}
+                                    onClick={() => navigate(`/tender/${tenderId}/final-bid-sequence`)}
                                     className="flex-1 py-3 rounded-[16px] bg-[#4F46E5] text-white font-bold text-[15px] hover:bg-[#4338ca] transition-colors shadow-sm"
                                 >
                                     Prepare Final Bid Document
