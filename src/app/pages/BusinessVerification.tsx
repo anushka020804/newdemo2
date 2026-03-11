@@ -37,8 +37,8 @@ export function BusinessVerification() {
     address: "",
   });
 
-  // Call deployed Express server at 52.66.64.130:5556
-  const API_BASE_URL = 'http://52.66.64.130:5556';
+  // Call local Express proxy server
+  const API_BASE_URL = 'http://localhost:4000';
   const PROXY_URL = `${API_BASE_URL}/api/pan-to-gst`;
   const GST_PROXY_URL = `${API_BASE_URL}/api/get-gst-details`;
   const GST_ADVANCE_URL = `${API_BASE_URL}/api/get-gst-details-advance`;
