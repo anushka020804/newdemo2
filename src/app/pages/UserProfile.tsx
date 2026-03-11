@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { motion } from "motion/react";
 import {
   ArrowLeft,
@@ -17,15 +17,20 @@ import {
   Download,
   Eye,
   Loader2,
+  LayoutDashboard,
+  Bookmark,
+  Settings,
 } from "lucide-react";
 import { getCustomerProfile, CustomerProfile } from "../api/profile";
 import { getDocumentStatus, RepositoryStatus } from "../api/documents";
+import { SharedSidebar, CompanyInfoPopup, CompanyInfo } from "../components/SharedComponents";
 
 export function UserProfile() {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
   const [docStatus, setDocStatus] = useState<RepositoryStatus | null>(null);
+  const [showCompanyInfo, setShowCompanyInfo] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -85,22 +90,56 @@ export function UserProfile() {
   const strokeDashoffset =
     circumference - (completionPercent / 100) * circumference;
 
+  // Company Info for popup (mapping from API CompanyInfo type)
+  const companyInfoPopup: CompanyInfo = {
+    name: profile?.companies?.[0]?.legalName || "Your Company",
+    registrationNumber: "CIN-U72200MH2020PTC123456",
+    gstNumber: profile?.companies?.[0]?.gstin || "27AABCU9603R1ZM",
+    panNumber: profile?.companies?.[0]?.pan || "AABCU9603R",
+    address: profile?.companies?.[0]?.address || "Address not available",
+    contactPerson: profile?.fullName || "Contact Person",
+    email: profile?.email || "contact@company.com",
+    phone: profile?.mobile || "+91 98765 43210",
+    hsnCodes: profile?.hsnCodes?.map(h => h.hsnCode) || ["84713010", "84714100", "85176290", "85044090"],
+    status: "verified"
+  };
+
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Loading your profile...</p>
+      <div className="min-h-screen bg-gray-50 flex">
+        <SharedSidebar 
+          companyName={companyInfoPopup.name}
+          onCompanyClick={() => setShowCompanyInfo(true)}
+        />
+        <div className="flex-1 ml-[220px] flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mx-auto mb-4" />
+            <p className="text-gray-600">Loading your profile...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <div className="min-h-screen bg-gray-30 flex">
+      {/* Sidebar */}
+      <SharedSidebar 
+        companyName={companyInfoPopup.name}
+        onCompanyClick={() => setShowCompanyInfo(true)}
+      />
+
+      {/* Company Info Popup */}
+      <CompanyInfoPopup
+        isOpen={showCompanyInfo}
+        onClose={() => setShowCompanyInfo(false)}
+        company={companyInfoPopup}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 ml-[220px]">
+        {/* Header */}
+        <div className="bg-white border-b border-gray-200 px-6 py-4">
           <div className="flex items-center gap-4">
             <button
               onClick={() => navigate("/dashboard")}
@@ -113,10 +152,9 @@ export function UserProfile() {
             </h1>
           </div>
         </div>
-      </div>
 
-      {/* Main Content — Two Column Layout */}
-      <div className="max-w-7xl mx-auto p-6">
+        {/* Main Content — Two Column Layout */}
+        <div className="p-6">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
           {/* ========== LEFT COLUMN ========== */}
           <div className="space-y-6">
@@ -174,7 +212,7 @@ export function UserProfile() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="text-[11px] uppercase tracking-wider text-gray-500 mb-1.5 block flex items-center gap-1.5">
+                  <label className="text-[11px] uppercase tracking-wider text-gray-500 mb-1.5 flex items-center gap-1.5">
                     Address
                   </label>
                   <p className="text-gray-900 flex items-start gap-2">
@@ -390,6 +428,7 @@ export function UserProfile() {
             </motion.div>
 
           </div>
+        </div>
         </div>
       </div>
     </div>

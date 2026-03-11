@@ -12,7 +12,7 @@ import MetalCapitalLanding from "./pages/MetalCapitalLanding";
 import { PortalPage } from "./pages/PortalPage";
 import { SignupPage } from "./pages/SignupPage";
 import { TenderListing } from "./pages/TenderListing";
-import { SavedBids } from "./pages/SavedBids";
+import { SavedBids } from "./pages/SavedBidsNew";
 import { WonBids } from "./pages/WonBids";
 import { UserProfile } from "./pages/UserProfile";
 import { CompleteProfile } from "./pages/CompleteProfile";
@@ -48,8 +48,7 @@ export const router = createBrowserRouter([
   {
     Component: ProtectedRoute,
     children: [
-      // { path: "/dashboard", Component: Dashboard },
-      { path: "/dashboard", Component: TenderListing },
+      { path: "/dashboard", Component: Dashboard },
       { path: "/tenders", Component: TenderListing },
       { path: "/tender/:id", Component: TenderDetails },
       { path: "/analysis1/:id", Component: Analysis1 },

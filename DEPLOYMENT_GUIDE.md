@@ -164,7 +164,7 @@ git push origin main
   - ✅ Free forever
   - ✅ Custom domain support
   - ✅ Auto SSL
-  - ⚠️ May spin down after inactivity (restarts in ~30 seconds)
+  - ⚠️ May spin down after in7activity (restarts in ~30 seconds)
 
 - **Paid Tier**: For production ($7/month)
   - ✅ Always online

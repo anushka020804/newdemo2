@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router";
+import { useAuth } from "../context/AuthContext";
+import { useLogout } from "../hooks/useLogout";
 import { motion } from "motion/react";
 import {
   Search,
@@ -17,9 +19,22 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
-  Bookmark
+  Bookmark,
+  LayoutDashboard,
+  Settings,
+  Bell,
+  ChevronUp
 } from "lucide-react";
 import { getMatchedBids, getAllTenders, BidResult, TenderResult } from "../api/bids";
+import {
+  FilterBar,
+  HeaderWithNotifications,
+  CompanyInfoPopup,
+  SharedSidebar,
+  sampleNotifications,
+  Notification,
+  CompanyInfo
+} from "../components/SharedComponents";
 
 interface Tender {
   id: string;
@@ -311,6 +326,10 @@ export function TenderListing() {
     if (location.state && location.state.filter) {
       setSelectedStatus(location.state.filter as string);
     }
+    // Handle activeTab from navigation state (when clicking sidebar submenu)
+    if (location.state && location.state.activeTab) {
+      setActiveTab(location.state.activeTab as "all" | "matched");
+    }
   }, [location.state]);
 
   const handleTabChange = (tab: "all" | "matched") => {
@@ -323,170 +342,108 @@ export function TenderListing() {
     setShowDailySummary(false);
   };
 
+  const { user } = useAuth();
+  const initials = user?.fullName
+    ? user.fullName.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
+    : "U";
+
+  const handleLogout = useLogout();
+
+  // Notification state
+  const [notifications, setNotifications] = useState<Notification[]>(sampleNotifications);
+  
+  const handleMarkAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+  
+  const handleMarkAllRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  };
+
+  // Company Info state
+  const [showCompanyInfo, setShowCompanyInfo] = useState(false);
+  const companyInfo: CompanyInfo = {
+    name: (user as any)?.companyName || user?.fullName || "Your Company",
+    registrationNumber: "CIN-U72200MH2020PTC123456",
+    gstNumber: "27AABCU9603R1ZM",
+    panNumber: "AABCU9603R",
+    address: "123 Business Park, Sector 5, Mumbai, Maharashtra - 400001",
+    contactPerson: user?.fullName || "Contact Person",
+    email: user?.email || "contact@company.com",
+    phone: "+91 98765 43210",
+    hsnCodes: ["84713010", "84714100", "85176290", "85044090"],
+    status: "verified"
+  };
+
+  // Clear filters handler
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setSelectedStatus("all");
+    setSelectedMinistry("all");
+    setSelectedBuyer("all");
+    setShowDailySummary(false);
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Main Sidebar Navigation with Tenders Dropdown */}
+      <SharedSidebar 
+        activeTab={activeTab} 
+        onTabChange={handleTabChange}
+        companyName={companyInfo.name}
+        onCompanyClick={() => setShowCompanyInfo(true)}
+      />
 
-      {/* Layout: Sidebar + Main Content */}
-      <div className="max-w-[1440px] mx-auto flex gap-6 p-6">
+      {/* Main Content Area */}
+      <div className="flex-1 ml-[220px]">
+        {/* Header with Notifications */}
+        <HeaderWithNotifications
+          title="B2B Tender Insights"
+          subtitle="Welcome back, Chief Procurement Officer"
+          initials={initials}
+          userName={user?.fullName || "Chief Procurement Officer"}
+          onProfileClick={() => navigate("/profile")}
+          onLogout={handleLogout}
+          notifications={notifications}
+          onMarkAsRead={handleMarkAsRead}
+          onMarkAllRead={handleMarkAllRead}
+        />
 
-        {/* ── Left Sidebar ── */}
-        <aside className="w-64 flex-shrink-0 sticky top-20 self-start space-y-5">
-          {/* Tabs */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-2 mb-2">View</p>
-            <button
-              onClick={() => handleTabChange("all")}
-              className={`w-full text-left px-4 py-2.5 text-sm font-semibold rounded-xl transition-colors mb-1 ${activeTab === "all" ? "bg-[#4F46E5] text-white shadow" : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                }`}
-            >
-              All Tenders
-            </button>
-            <button
-              onClick={() => handleTabChange("matched")}
-              className={`w-full text-left px-4 py-2.5 text-sm font-semibold rounded-xl transition-colors ${activeTab === "matched" ? "bg-[#4F46E5] text-white shadow" : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                }`}
-            >
-              My Tenders
-            </button>
-          </div>
+        {/* Page Content */}
+        <div className="p-6">
+          {/* ── Horizontal Filter Bar ── */}
+          <FilterBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedStatus={selectedStatus}
+            onStatusChange={(value) => {
+              setSelectedStatus(value);
+              if (value !== "past-24hrs") setShowDailySummary(false);
+            }}
+            selectedMinistry={selectedMinistry}
+            onMinistryChange={setSelectedMinistry}
+            ministries={ministries}
+            selectedBuyer={selectedBuyer}
+            onBuyerChange={setSelectedBuyer}
+            buyers={buyers}
+            sortOption={sortOption}
+            onSortChange={setSortOption}
+            viewMode={viewMode}
+            onViewModeChange={setViewMode}
+            showDailySummary={showDailySummary}
+            onToggleDailySummary={() => setShowDailySummary(!showDailySummary)}
+            onClearFilters={handleClearFilters}
+          />
 
-          {/* Filters */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-4">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Filters</p>
+          {/* Company Info Popup */}
+          <CompanyInfoPopup
+            isOpen={showCompanyInfo}
+            onClose={() => setShowCompanyInfo(false)}
+            company={companyInfo}
+          />
 
-            {/* Status */}
-            <div>
-              <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Status</label>
-              <div className="relative">
-                <select
-                  value={selectedStatus}
-                  onChange={(e) => {
-                    setSelectedStatus(e.target.value);
-                    if (e.target.value !== "past-24hrs") setShowDailySummary(false);
-                  }}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none font-medium text-gray-700"
-                >
-                  <option value="all">All</option>
-                  <option value="past-24hrs">New (24hrs)</option>
-                  <option value="active">Live</option>
-                  <option value="closing-soon">Closing Soon</option>
-                  <option value="expired">Expired</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Ministry */}
-            <div>
-              <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Ministry</label>
-              <div className="relative">
-                <select
-                  value={selectedMinistry}
-                  onChange={(e) => setSelectedMinistry(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none font-medium text-gray-700"
-                >
-                  <option value="all">All Ministries</option>
-                  {ministries.filter(m => m !== "all").map(m => (
-                    <option key={m} value={m}>{m}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Buyer */}
-            <div>
-              <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Buyer</label>
-              <div className="relative">
-                <select
-                  value={selectedBuyer}
-                  onChange={(e) => setSelectedBuyer(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none font-medium text-gray-700"
-                >
-                  <option value="all">All Buyers</option>
-                  {buyers.filter(b => b !== "all").map(b => (
-                    <option key={b} value={b}>{b}</option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Sort */}
-            <div>
-              <label className="text-xs font-semibold text-gray-600 mb-1.5 block">Sort By</label>
-              <div className="relative">
-                <select
-                  value={sortOption}
-                  onChange={(e) => setSortOption(e.target.value)}
-                  className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none font-medium text-gray-700"
-                >
-                  <option value="posted-date-desc">Newest First</option>
-                  <option value="posted-date-asc">Oldest First</option>
-                  <option value="submission-date-asc">Deadline (Soonest)</option>
-                  <option value="submission-date-desc">Deadline (Latest)</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Daily summary toggle */}
-            {selectedStatus === "past-24hrs" && (
-              <button
-                onClick={() => setShowDailySummary(!showDailySummary)}
-                className="w-full px-3 py-2 bg-indigo-100 text-indigo-700 rounded-xl hover:bg-indigo-200 transition-all font-medium flex items-center justify-center gap-2 text-xs"
-              >
-                <BarChart3 className="w-3.5 h-3.5" />
-                {showDailySummary ? "Hide" : "Show"} Summary
-              </button>
-            )}
-
-            {/* Clear all */}
-            {(selectedStatus !== "all" || selectedMinistry !== "all" || selectedBuyer !== "all") && (
-              <button
-                onClick={() => {
-                  setSearchQuery("");
-                  setSelectedStatus("all");
-                  setSelectedMinistry("all");
-                  setSelectedBuyer("all");
-                }}
-                className="w-full text-xs text-indigo-600 font-semibold hover:text-indigo-800 pt-1"
-              >
-                Clear all filters
-              </button>
-            )}
-          </div>
-        </aside>
-
-        {/* ── Right Main Content ── */}
-        <div className="flex-1 min-w-0">
-          {/* Search Bar & View Toggle */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search tenders by buyer, organization, or category..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-sm shadow-sm"
-              />
-            </div>
-            <div className="flex items-center bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-3 transition-colors ${viewMode === "list" ? "bg-indigo-600 text-white" : "text-gray-400 hover:text-gray-600"}`}
-              >
-                <List className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-3 transition-colors ${viewMode === "grid" ? "bg-indigo-600 text-white" : "text-gray-400 hover:text-gray-600"}`}
-              >
-                <LayoutGrid className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
+          {/* ── Main Content ── */}
+          <div className="flex-1 min-w-0">
 
           {/* Active filter summary */}
           {(searchQuery || selectedStatus !== "all" || selectedMinistry !== "all" || selectedBuyer !== "all") && (
@@ -804,7 +761,8 @@ export function TenderListing() {
           )}
 
         </div>{/* end flex-1 main content */}
-      </div>{/* end sidebar + main flex */}
+        </div>{/* end page content padding */}
+      </div>{/* end main content area */}
     </div>
   );
 }

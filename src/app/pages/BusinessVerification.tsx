@@ -37,11 +37,13 @@ export function BusinessVerification() {
     address: "",
   });
 
-  // Call deployed Express server at 52.66.64.130:5556
-  const API_BASE_URL = 'http://52.66.64.130:5556';
-  const PROXY_URL = `${API_BASE_URL}/api/pan-to-gst`;
-  const GST_PROXY_URL = `${API_BASE_URL}/api/get-gst-details`;
-  const GST_ADVANCE_URL = `${API_BASE_URL}/api/get-gst-details-advance`;
+
+  // make changes to use environment variable for API base URL, with fallback to localhost
+  // Use environment variable for API base URL
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api';
+  const PROXY_URL = `${API_BASE_URL}/pan-to-gst`;
+  const GST_PROXY_URL = `${API_BASE_URL}/get-gst-details`;
+  const GST_ADVANCE_URL = `${API_BASE_URL}/get-gst-details-advance`;
 
   const headers = {
     "Content-Type": "application/json",
@@ -100,19 +102,17 @@ export function BusinessVerification() {
         }));
 
         // Fetch HSN from the new Advance API
+        // make changes to use environment variable for API base URL, with fallback to localhost
         try {
-          const hsnRes = await fetch(
-            `${API_BASE_URL}/api/get-gst-details-advance`,
-            {
-              method: "POST",
-              headers,
-              body: JSON.stringify({
-                gstNumber: gstNumber,
-                hsnDetails: true,
-                consent: "Y",
-              }),
-            },
-          );
+          const hsnRes = await fetch(GST_ADVANCE_URL, {
+            method: "POST",
+            headers,
+            body: JSON.stringify({
+              gstNumber: gstNumber,
+              hsnDetails: true,
+              consent: "Y",
+            }),
+          });
           const hsnData = await hsnRes.json();
 
           let fetchedHsn: any[] = [];
