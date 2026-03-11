@@ -17,7 +17,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
-  Bookmark
+  Bookmark,
+  X
 } from "lucide-react";
 import { getMatchedBids, getAllTenders, BidResult, TenderResult } from "../api/bids";
 
@@ -90,6 +91,9 @@ export function TenderListing() {
   const [sortOption, setSortOption] = useState<string>("posted-date-desc");
   const [showDailySummary, setShowDailySummary] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+
+  // --- Mobile Filter Sidebar State ---
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
 
   // --- Saved Tenders State ---
   const [savedTendersMap, setSavedTendersMap] = useState<Record<string, boolean>>({});
@@ -229,7 +233,15 @@ export function TenderListing() {
       setMatchedError(null);
       try {
         const bids = await getMatchedBids();
-        setMatchedTenders(bids.map(mapBidResult));
+        const mapped = bids.map(mapBidResult);
+        // Deduplicate by bidNumber — backend may return same tender for different matched keywords
+        const seen = new Set<string>();
+        const unique = mapped.filter(t => {
+          if (seen.has(t.tenderNumber)) return false;
+          seen.add(t.tenderNumber);
+          return true;
+        });
+        setMatchedTenders(unique);
       } catch (err) {
         console.error("Failed to fetch matched bids", err);
         setMatchedError("Failed to load your matched tenders. Please try again.");
@@ -313,45 +325,73 @@ export function TenderListing() {
     }
   }, [location.pathname, location.key]);
 
-  const handleTabChange = (tab: "all" | "matched") => {
-    setActiveTab(tab);
-    if (tab === "all") setAllCurrentPage(1);
-    setSelectedStatus("all");
-    setSelectedMinistry("all");
-    setSelectedBuyer("all");
-    setSearchQuery("");
-    setShowDailySummary(false);
+const handleTabChange = (tab: "all" | "matched") => {
+  setActiveTab(tab);
+  if (tab === "all") setAllCurrentPage(1);
+  setSelectedStatus("all");
+  setSelectedMinistry("all");
+  setSelectedBuyer("all");
+  setSearchQuery("");
+  setShowDailySummary(false);
+  setShowMobileFilters(false);
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50">
 
+      {/* Mobile Filter Overlay */}
+      {showMobileFilters && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setShowMobileFilters(false)}
+        />
+      )}
+
       {/* Layout: Sidebar + Main Content */}
-      <div className="max-w-[1440px] mx-auto flex gap-6 p-6">
+      <div className="max-w-[1440px] mx-auto flex gap-6 p-4 md:p-6">
 
         {/* ── Left Sidebar ── */}
-        <aside className="w-64 flex-shrink-0 sticky top-20 self-start space-y-5">
-          {/* Tabs */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-3">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-2 mb-2">View</p>
-            <button
-              onClick={() => handleTabChange("all")}
-              className={`w-full text-left px-4 py-2.5 text-sm font-semibold rounded-xl transition-colors mb-1 ${activeTab === "all" ? "bg-[#4F46E5] text-white shadow" : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                }`}
+        <aside className={`
+          fixed lg:relative inset-y-0 left-0 z-50 lg:z-auto
+          w-72 lg:w-64 flex-shrink-0 lg:sticky lg:top-20 lg:self-start
+          transform transition-transform duration-300 ease-in-out
+          ${showMobileFilters ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          bg-gradient-to-br from-indigo-50 via-white to-blue-50 lg:bg-transparent
+          p-4 lg:p-0 overflow-y-auto lg:overflow-visible
+          space-y-5
+        `}>
+          {/* Mobile Close Button */}
+          <div className="flex items-center justify-between lg:hidden mb-2">
+            <span className="text-lg font-bold text-gray-900">Filters</span>
+            <button 
+              onClick={() => setShowMobileFilters(false)}
+              className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
             >
-              All Tenders
-            </button>
-            <button
-              onClick={() => handleTabChange("matched")}
-              className={`w-full text-left px-4 py-2.5 text-sm font-semibold rounded-xl transition-colors ${activeTab === "matched" ? "bg-[#4F46E5] text-white shadow" : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                }`}
-            >
-              My Tenders
+              <X className="w-5 h-5 text-gray-600" />
             </button>
           </div>
 
+{/* Tabs - hidden on mobile since we have mobile tabs in main content */}
+  <div className="hidden lg:block bg-white rounded-2xl shadow-lg border border-gray-100 p-3">
+  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-2 mb-2">View</p>
+  <button
+  onClick={() => handleTabChange("all")}
+  className={`w-full text-left px-4 py-2.5 text-sm font-semibold rounded-xl transition-colors mb-1 ${activeTab === "all" ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow" : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+  }`}
+  >
+  All Tenders
+  </button>
+  <button
+  onClick={() => handleTabChange("matched")}
+  className={`w-full text-left px-4 py-2.5 text-sm font-semibold rounded-xl transition-colors ${activeTab === "matched" ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow" : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+  }`}
+  >
+  My Tenders
+  </button>
+  </div>
+
           {/* Filters */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 space-y-4">
+          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 space-y-4">
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Filters</p>
 
             {/* Status */}
@@ -460,39 +500,64 @@ export function TenderListing() {
 
         {/* ── Right Main Content ── */}
         <div className="flex-1 min-w-0">
+          {/* Mobile Tab Switcher */}
+          <div className="flex items-center gap-2 mb-4 lg:hidden">
+            <button
+              onClick={() => handleTabChange("all")}
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-colors ${activeTab === "all" ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow" : "bg-white text-gray-600 border border-gray-200"
+                }`}
+            >
+              All Tenders
+            </button>
+            <button
+              onClick={() => handleTabChange("matched")}
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-colors ${activeTab === "matched" ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow" : "bg-white text-gray-600 border border-gray-200"
+                }`}
+            >
+              My Tenders
+            </button>
+          </div>
+
           {/* Search Bar & View Toggle */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+            {/* Mobile Filter Button */}
+            <button
+              onClick={() => setShowMobileFilters(true)}
+              className="lg:hidden p-3 bg-white border border-gray-200 rounded-xl shadow-sm hover:bg-gray-50 transition-colors flex-shrink-0"
+            >
+              <Filter className="w-5 h-5 text-gray-600" />
+            </button>
+            <div className="relative flex-1 min-w-0">
+              <Search className="absolute left-3 md:left-4 top-1/2 transform -translate-y-1/2 w-4 md:w-5 h-4 md:h-5 text-gray-400" />
               <input
                 type="text"
-                placeholder="Search tenders by buyer, organization, or category..."
+                placeholder="Search tenders..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-sm shadow-sm"
+                className="w-full pl-9 md:pl-11 pr-3 md:pr-4 py-2.5 md:py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white text-sm shadow-sm"
               />
             </div>
-            <div className="flex items-center bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+            <div className="hidden sm:flex items-center bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
               <button
                 onClick={() => setViewMode("list")}
-                className={`p-3 transition-colors ${viewMode === "list" ? "bg-indigo-600 text-white" : "text-gray-400 hover:text-gray-600"}`}
+                className={`p-2.5 md:p-3 transition-colors ${viewMode === "list" ? "bg-indigo-600 text-white" : "text-gray-400 hover:text-gray-600"}`}
               >
-                <List className="w-5 h-5" />
+                <List className="w-4 md:w-5 h-4 md:h-5" />
               </button>
               <button
                 onClick={() => setViewMode("grid")}
-                className={`p-3 transition-colors ${viewMode === "grid" ? "bg-indigo-600 text-white" : "text-gray-400 hover:text-gray-600"}`}
+                className={`p-2.5 md:p-3 transition-colors ${viewMode === "grid" ? "bg-indigo-600 text-white" : "text-gray-400 hover:text-gray-600"}`}
               >
-                <LayoutGrid className="w-5 h-5" />
+                <LayoutGrid className="w-4 md:w-5 h-4 md:h-5" />
               </button>
             </div>
           </div>
 
           {/* Active filter summary */}
           {(searchQuery || selectedStatus !== "all" || selectedMinistry !== "all" || selectedBuyer !== "all") && (
-            <div className="flex justify-between items-center px-1 mb-4">
-              <span className="text-sm font-medium text-gray-500">
-                Showing matches for your filters ({filteredTenders.length} results)
+            <div className="flex justify-between items-center px-1 mb-3 md:mb-4">
+              <span className="text-xs md:text-sm font-medium text-gray-500">
+                Showing {filteredTenders.length} results
               </span>
             </div>
           )}
@@ -502,31 +567,31 @@ export function TenderListing() {
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-gradient-to-r from-indigo-500 to-blue-500 rounded-2xl shadow-xl p-8 mb-6 text-white relative overflow-hidden"
+              className="bg-gradient-to-r from-indigo-500 to-blue-500 rounded-2xl shadow-xl p-4 md:p-8 mb-4 md:mb-6 text-white relative overflow-hidden"
             >
               <div className="absolute inset-0 opacity-10">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full transform translate-x-32 -translate-y-32" />
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full transform -translate-x-24 translate-y-24" />
               </div>
 
-              <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <BarChart3 className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold">Daily Summary</h2>
-                    <p className="text-blue-100 text-sm">Past 24 hours insights</p>
+<div className="relative z-10">
+  <div className="flex items-center gap-3 mb-4 md:mb-6">
+  <div className="w-10 h-10 md:w-12 md:h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+  <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-white" />
+  </div>
+  <div>
+  <h2 className="text-xl md:text-2xl font-bold">Daily Summary</h2>
+  <p className="text-blue-100 text-xs md:text-sm">Past 24 hours insights</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                   <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-4 border border-white border-opacity-20">
                     <div className="flex items-center gap-2 mb-2">
                       <FileText className="w-5 h-5 text-blue-100" />
                       <p className="text-blue-100 text-sm">Past 24 Hours</p>
                     </div>
-                    <p className="text-4xl font-bold">{past24HoursTenders.length}</p>
+                    <p className="text-2xl md:text-4xl font-bold">{past24HoursTenders.length}</p>
                     <p className="text-xs text-blue-100 mt-1">Posted recently</p>
                   </div>
 
@@ -535,7 +600,7 @@ export function TenderListing() {
                       <TrendingUp className="w-5 h-5 text-blue-100" />
                       <p className="text-blue-100 text-sm">Avg Match</p>
                     </div>
-                    <p className="text-4xl font-bold">{avgMatchPercentage.toFixed(0)}%</p>
+                    <p className="text-2xl md:text-4xl font-bold">{avgMatchPercentage.toFixed(0)}%</p>
                     <p className="text-xs text-blue-100 mt-1">Your compatibility</p>
                   </div>
 
@@ -553,7 +618,7 @@ export function TenderListing() {
           )}
 
           {/* Tender Cards */}
-          <div className={viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 gap-5" : "space-y-6"}>
+          <div className={viewMode === "grid" ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 gap-4 md:gap-5" : "space-y-4 md:space-y-6"}>
             {isLoading ? (
               <div className={`col-span-1 md:col-span-2 bg-white rounded-2xl shadow-sm p-12 text-center border border-gray-100 flex flex-col items-center`}>
                 <Loader2 className="w-10 h-10 text-indigo-500 mb-4 animate-spin" />
@@ -581,7 +646,7 @@ export function TenderListing() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: Math.min(index * 0.05, 0.3) }}
-                    className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow p-6 border border-gray-100"
+                    className="bg-white rounded-xl md:rounded-2xl shadow-sm hover:shadow-md transition-shadow p-4 md:p-6 border border-gray-100"
                   >
                     <div className="flex items-start gap-4 flex-col sm:flex-row">
                       <div className="bg-indigo-500 rounded-xl p-3 flex-shrink-0 mt-1 sm:self-start">
@@ -595,7 +660,7 @@ export function TenderListing() {
                               <span className="text-xs font-bold tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md mb-2 inline-block">
                                 {tender.tenderNumber}
                               </span>
-                              <div className="text-[15px] font-extrabold text-emerald-800 line-clamp-1" title={tender.items}>
+                              <div className="text-[15px] font-bold text-emerald-800 line-clamp-1" title={tender.items}>
                                 Items: {tender.items}
                               </div>
                             </div>
@@ -606,7 +671,7 @@ export function TenderListing() {
                           </span>
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-6 pb-6 border-b border-gray-100">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mt-4 md:mt-6 pb-4 md:pb-6 border-b border-gray-100">
                           <div>
                             <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Keyword</p>
                             <p className="text-sm font-semibold text-gray-900 truncate pr-4" title={tender.category}>{tender.category}</p>
@@ -666,7 +731,7 @@ export function TenderListing() {
                             </button>
                             <button
                               onClick={() => navigate(`/analysis1/${encodeURIComponent(tender.id)}`, { state: { tender } })}
-                              className="flex-1 sm:flex-none sm:w-auto bg-[#4F46E5] text-white px-6 py-2.5 rounded-xl hover:bg-[#4338CA] transition-colors font-semibold text-sm shadow-sm flex items-center justify-center gap-2"
+                              className="flex-1 sm:flex-none sm:w-auto bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-6 py-2.5 rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-colors font-semibold text-sm shadow-sm flex items-center justify-center gap-2"
                             >
                               View Tender
                               <ChevronRight className="w-4 h-4" />
@@ -696,7 +761,7 @@ export function TenderListing() {
                           <span className="text-[10px] font-bold tracking-wider text-indigo-600 bg-indigo-50 px-2 py-1 rounded-md inline-block mb-1.5">
                             {tender.tenderNumber}
                           </span>
-                          <div className="text-[14px] font-extrabold text-emerald-800 line-clamp-1 mt-0.5" title={tender.items}>
+                          <div className="text-[14px] font-bold text-emerald-800 line-clamp-1 mt-0.5" title={tender.items}>
                             Items: {tender.items}
                           </div>
                         </div>
@@ -774,30 +839,30 @@ export function TenderListing() {
 
           {/* Pagination Controls — only for "All Tenders" tab */}
           {!isLoading && filteredTenders.length > 0 && activeTab === "all" && allTotalPages > 1 && (
-            <div className="mt-8 flex items-center justify-between bg-white px-6 py-4 rounded-2xl shadow-sm border border-gray-100">
+            <div className="mt-6 md:mt-8 flex items-center justify-between bg-white px-3 md:px-6 py-3 md:py-4 rounded-2xl shadow-lg border border-gray-100">
               <button
                 onClick={() => setAllCurrentPage(p => Math.max(1, p - 1))}
                 disabled={allCurrentPage === 1}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${allCurrentPage === 1
+                className={`flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-colors ${allCurrentPage === 1
                   ? "text-gray-400 cursor-not-allowed bg-gray-50"
                   : "text-indigo-600 hover:bg-indigo-50"
                   }`}
               >
                 <ChevronLeft className="w-4 h-4" />
-                Previous
+                <span className="hidden sm:inline">Previous</span>
               </button>
-              <div className="text-sm font-medium text-gray-600">
-                Page <span className="font-bold text-gray-900">{allCurrentPage}</span> of <span className="font-bold text-gray-900">{allTotalPages}</span>
+              <div className="text-xs md:text-sm font-medium text-gray-600">
+                <span className="hidden sm:inline">Page </span><span className="font-bold text-gray-900">{allCurrentPage}</span> <span className="hidden sm:inline">of</span><span className="sm:hidden">/</span> <span className="font-bold text-gray-900">{allTotalPages}</span>
               </div>
               <button
                 onClick={() => setAllCurrentPage(p => Math.min(allTotalPages, p + 1))}
                 disabled={allCurrentPage === allTotalPages}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${allCurrentPage === allTotalPages
+                className={`flex items-center gap-1 md:gap-2 px-2 md:px-4 py-2 rounded-xl text-xs md:text-sm font-semibold transition-colors ${allCurrentPage === allTotalPages
                   ? "text-gray-400 cursor-not-allowed bg-gray-50"
                   : "text-indigo-600 hover:bg-indigo-50"
                   }`}
               >
-                Next
+                <span className="hidden sm:inline">Next</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>

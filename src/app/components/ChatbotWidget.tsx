@@ -1,13 +1,62 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Bot, Send, Paperclip, X, Loader2 } from "lucide-react";
-
-const GEMINI_API_KEY = "AIzaSyAiMH_gsKkzAAi0-oSyQwwZ3hXk1KLXCDk";
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
+import { Bot, Send, X, Loader2 } from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
   text: string;
+}
+
+/** Minimal markdown renderer: bold, italic, inline code, line breaks */
+function renderMarkdown(text: string) {
+  // Split into lines so we can handle bullet points
+  const lines = text.split('\n');
+  const elements: React.ReactNode[] = [];
+
+  lines.forEach((line, lineIdx) => {
+    if (lineIdx > 0) elements.push(<br key={`br-${lineIdx}`} />);
+
+    // Check for bullet points
+    const bulletMatch = line.match(/^(\s*)[*-]\s+(.*)/);
+    const content = bulletMatch ? bulletMatch[2] : line;
+    const isBullet = !!bulletMatch;
+
+    // Process inline markdown: **bold**, *italic*, `code`
+    const parts: React.ReactNode[] = [];
+    const regex = /(\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`)/g;
+    let lastIndex = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = regex.exec(content)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(content.slice(lastIndex, match.index));
+      }
+      if (match[2]) {
+        parts.push(<strong key={`b-${lineIdx}-${match.index}`}>{match[2]}</strong>);
+      } else if (match[3]) {
+        parts.push(<em key={`i-${lineIdx}-${match.index}`}>{match[3]}</em>);
+      } else if (match[4]) {
+        parts.push(<code key={`c-${lineIdx}-${match.index}`} className="bg-gray-200 px-1 rounded text-[12px]">{match[4]}</code>);
+      }
+      lastIndex = match.index + match[0].length;
+    }
+    if (lastIndex < content.length) {
+      parts.push(content.slice(lastIndex));
+    }
+
+    if (isBullet) {
+      elements.push(
+        <span key={`li-${lineIdx}`} className="flex gap-1.5 ml-1">
+          <span className="text-indigo-400">•</span>
+          <span>{parts}</span>
+        </span>
+      );
+    } else {
+      elements.push(<span key={`line-${lineIdx}`}>{parts}</span>);
+    }
+  });
+
+  return elements;
 }
 
 export function ChatbotWidget() {
@@ -33,26 +82,20 @@ export function ChatbotWidget() {
     setLoading(true);
 
     try {
-      const history = [...messages, userMsg].map((m) => ({
-        role: m.role === "assistant" ? "model" : "user",
-        parts: [{ text: m.text }],
+      // Build messages array for the server proxy
+      const apiMessages = [...messages, userMsg].map((m) => ({
+        role: m.role === "assistant" ? "assistant" : "user",
+        content: m.text,
       }));
 
-      const res = await fetch(GEMINI_URL, {
+      const res = await fetch("http://localhost:4000/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: history,
-          systemInstruction: {
-            parts: [{ text: "You are Opportunity X AI, an expert assistant for government tenders, bids, and procurement on the GeM (Government e-Marketplace) portal. Help users understand tender requirements, eligibility criteria, bid preparation, and compliance. Keep answers concise and helpful." }],
-          },
-        }),
+        body: JSON.stringify({ messages: apiMessages }),
       });
 
-      if (!res.ok) throw new Error(`Gemini API error: ${res.status}`);
-
       const data = await res.json();
-      const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't generate a response.";
+      const reply = data.answer || "Sorry, I couldn't generate a response.";
       setMessages((prev) => [...prev, { role: "assistant", text: reply }]);
     } catch (err: any) {
       setMessages((prev) => [
@@ -114,13 +157,13 @@ export function ChatbotWidget() {
                     </div>
                   )}
                   <div
-                    className={`text-[13px] rounded-2xl p-3 shadow-sm max-w-[80%] whitespace-pre-wrap ${
+                    className={`text-[13px] rounded-2xl p-3 shadow-sm max-w-[80%] leading-relaxed ${
                       msg.role === "user"
                         ? "bg-[#4F46E5] text-white rounded-tr-none"
                         : "bg-gray-50 border border-gray-200 rounded-tl-none text-gray-800"
                     }`}
                   >
-                    {msg.text}
+                    {msg.role === "assistant" ? renderMarkdown(msg.text) : msg.text}
                   </div>
                 </div>
               ))}

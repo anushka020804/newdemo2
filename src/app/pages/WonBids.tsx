@@ -172,7 +172,7 @@ export function WonBids() {
 
           <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
             <div className="flex items-start justify-between mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-indigo-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
                 <IndianRupee className="w-6 h-6 text-white" />
               </div>
             </div>
@@ -265,7 +265,7 @@ export function WonBids() {
               <div className="flex gap-3">
                 <button
                   onClick={() => handleDownloadContract(bid)}
-                  className="flex-1 bg-gradient-to-r from-indigo-500 to-blue-500 text-white px-4 py-2.5 rounded-xl hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                  className="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2.5 rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                 >
                   <Download className="w-4 h-4" />
                   <span>Download Contract</span>
@@ -435,7 +435,7 @@ export function WonBids() {
               <div className="mt-6">
                 <button
                   onClick={() => handleDownloadContract(selectedBid)}
-                  className="bg-gradient-to-r from-indigo-500 to-blue-500 text-white px-4 py-2.5 rounded-xl hover:from-indigo-600 hover:to-blue-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                  className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white px-4 py-2.5 rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
                 >
                   <Download className="w-4 h-4" />
                   <span>Download Contract</span>

@@ -50,19 +50,21 @@ export function TenderDetails() {
 
     // Metrics
     doc.setFontSize(12);
-    doc.text(`Bid Start Date: ${tender.bidStartDate}`, 20, 80);
-    doc.text(`Bid End Date: ${tender.submissionDeadline}`, 20, 90);
-    doc.text(`Quantity: ${tender.quantity}`, 20, 100);
-    doc.text(`HSN Code: ${tender.hsnCode}`, 20, 110);
+    let yPos = 80;
+    if (tender.bidStartDate) { doc.text(`Bid Start Date: ${tender.bidStartDate}`, 20, yPos); yPos += 10; }
+    if (tender.submissionDeadline) { doc.text(`Bid End Date: ${tender.submissionDeadline}`, 20, yPos); yPos += 10; }
+    if (tender.quantity) { doc.text(`Quantity: ${tender.quantity}`, 20, yPos); yPos += 10; }
+    if (tender.hsnCode) { doc.text(`HSN Code: ${tender.hsnCode}`, 20, yPos); yPos += 10; }
+    yPos += 10;
 
     // Eligibility Score
     doc.setFontSize(16);
     if (tender.matchScore >= 60) {
       doc.setTextColor(34, 197, 94); // Green
-      doc.text(`Eligibility Score: ${tender.matchScore}% (Eligible)`, 20, 130);
+      doc.text(`Eligibility Score: ${tender.matchScore}% (Eligible)`, 20, yPos);
     } else {
       doc.setTextColor(239, 68, 68); // Red
-      doc.text(`Eligibility Score: ${tender.matchScore}% (Not Eligible)`, 20, 130);
+      doc.text(`Eligibility Score: ${tender.matchScore}% (Not Eligible)`, 20, yPos);
     }
 
     // Save the PDF
@@ -86,7 +88,7 @@ export function TenderDetails() {
       submissionDeadline: "Feb 15, 2026",
       bidStartDate: "Jan 28, 2026",
       quantity: "500",
-      hsnCode: "85019000",
+      hsnCode: "",
       matchScore: 90,
       summary: "This tender involves the supply and installation of over 500 industrial valves for Karnataka's water distribution infrastructure. The project requires IS 14846:2000 compliant valves with cast iron or ductile iron bodies, suitable for PN 10/16 working pressure. The scope includes delivery, on-site installation, quality testing, and a 1-year warranty period. Payment will be structured in four phases: 30% advance, 40% on delivery, 20% post-installation, and 10% after warranty completion. Suppliers must demonstrate minimum 3 years of experience, hold valid GST registration, and show a turnover of at least ₹1 Crore in the previous fiscal year. ISO 9001:2015 certification is preferred. The successful bidder will also provide operational training to PWD staff.",
       risks: [
@@ -276,15 +278,15 @@ export function TenderDetails() {
     id: tenderId || mockTender.id,
     bidNumber: rawBid.bidNumber || passedTender?.tenderNumber || analysisPayload?.bidNumber || '',
     title: rawBid.bidNumber || rawBid.items || analysisPayload?.bidNumber || mockTender.title,
-    organization: rawBid.organization || passedTender?.organization || analysisData?.metadata?.ministry_department || mockTender.organization,
+    organization: rawBid.organization || passedTender?.organization || analysisData?.metadata?.ministry_department || '',
     ministry: rawBid.ministry || '',
     department: rawBid.department || '',
     items: rawBid.items || analysisData?.metadata?.category || '',
     bidUrl: rawBid.bidUrl || analysisPayload?.bidUrl || '',
-    submissionDeadline: passedTender?.submissionDate || analysisData?.metadata?.closing_date || mockTender.submissionDeadline,
-    bidStartDate: passedTender?.postedDate || analysisData?.metadata?.published_date || mockTender.bidStartDate,
-    quantity: passedTender?.quantity || mockTender.quantity,
-    hsnCode: (rawBid.hsnCode || mockTender.hsnCode)?.toString().replace(/\.0$/, ""),
+    submissionDeadline: passedTender?.submissionDate || analysisData?.metadata?.closing_date || '',
+    bidStartDate: passedTender?.postedDate || analysisData?.metadata?.published_date || '',
+    quantity: passedTender?.quantity || rawBid.quantity || '',
+    hsnCode: (rawBid.hsnCode || rawBid.hsn || '')?.toString().replace(/\.0$/, ""),
     matchScore: eligibilityScore ?? mockTender.matchScore,
     risks,
     scopeOfWork,
@@ -294,7 +296,7 @@ export function TenderDetails() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC]">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -306,7 +308,7 @@ export function TenderDetails() {
               <ArrowLeft className="w-5 h-5 text-gray-500" />
             </button>
             <div>
-              <h1 className="text-lg font-semibold text-[#4F46E5]">
+              <h1 className="text-lg font-semibold text-indigo-600">
                 Tender Details
               </h1>
               <p className="text-xs text-gray-400 font-medium tracking-wide uppercase">
@@ -329,21 +331,21 @@ export function TenderDetails() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-5"
+              className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 mb-5"
             >
               {/* Tender Header */}
               <div className="flex items-start gap-4 mb-4">
-                <div className="w-14 h-14 bg-[#3B82F6] rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                <div className="w-14 h-14 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
                   <Building2 className="w-7 h-7 text-white" />
                 </div>
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold text-gray-900 mb-1">{tender.title}</h2>
                   {tender.items && (
-                    <div className="text-[15px] font-extrabold text-emerald-800 line-clamp-2 mt-1 mb-2" title={tender.items}>
+                    <div className="text-[15px] font-bold text-emerald-800 line-clamp-2 mt-1 mb-2" title={tender.items}>
                       Items: {tender.items}
                     </div>
                   )}
-                  <p className="text-sm font-medium text-[#3B82F6]">
+                  <p className="text-sm font-medium text-blue-600">
                     Buyer: {tender.organization}
                   </p>
                 </div>
@@ -352,7 +354,7 @@ export function TenderDetails() {
                     href={tender.bidUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-5 py-2.5 bg-[#4F46E5] text-white rounded-xl hover:bg-[#4338CA] transition-colors shadow-sm font-semibold text-sm flex-shrink-0"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-colors shadow-sm font-semibold text-sm flex-shrink-0"
                   >
                     <Download className="w-4 h-4" />
                     Bid Document
@@ -363,18 +365,19 @@ export function TenderDetails() {
               {/* Info Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                 {tender.ministry && (
-                  <div className="p-2.5 bg-[#FAFAFF] rounded-[12px] border border-[#EEF2FF]">
+                  <div className="p-2.5 bg-indigo-50/50 rounded-xl border border-indigo-100">
                     <p className="text-[10px] font-bold text-gray-400 mb-0.5 uppercase tracking-wider">Ministry</p>
                     <p className="text-sm font-semibold text-gray-900">{tender.ministry}</p>
                   </div>
                 )}
                 {tender.department && (
-                  <div className="p-2.5 bg-[#F8FAFC] rounded-[12px] border border-gray-100">
+                  <div className="p-2.5 bg-gray-50 rounded-xl border border-gray-100">
                     <p className="text-[10px] font-bold text-gray-400 mb-0.5 uppercase tracking-wider">Department</p>
                     <p className="text-sm font-semibold text-gray-900">{tender.department}</p>
                   </div>
                 )}
-                <div className="p-2.5 bg-[#F8FAFC] rounded-[12px] border border-gray-100">
+                {tender.hsnCode && (
+                <div className="p-2.5 bg-gray-50 rounded-xl border border-gray-100">
                   <p className="text-[10px] font-bold text-gray-400 mb-1 flex items-center gap-1.5 uppercase tracking-wider">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" />
@@ -383,7 +386,9 @@ export function TenderDetails() {
                   </p>
                   <p className="text-sm font-bold text-gray-900">{tender.hsnCode}</p>
                 </div>
-                <div className="p-2.5 bg-[#F8FAFC] rounded-[12px] border border-gray-100">
+                )}
+                {tender.quantity && (
+                <div className="p-2.5 bg-gray-50 rounded-xl border border-gray-100">
                   <p className="text-[10px] font-bold text-gray-400 mb-1 flex items-center gap-1.5 uppercase tracking-wider">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M6 3h12M6 8h12M6 3v5M14 8c0 5.523-4 8-8 8M8 21l8-8" />
@@ -392,28 +397,33 @@ export function TenderDetails() {
                   </p>
                   <p className="text-sm font-bold text-gray-900">{tender.quantity}</p>
                 </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="p-3 bg-[#FAFAFF] rounded-[12px] border border-[#EEF2FF]">
+                {tender.bidStartDate && (
+                <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100">
                   <p className="text-[10px] font-bold text-gray-400 mb-1 flex items-center gap-1.5 uppercase tracking-wider">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
                     </svg>
                     BID START DATE
                   </p>
-                  <p className="text-[20px] font-bold text-[#4F46E5]">{tender.bidStartDate}</p>
+                  <p className="text-[20px] font-bold text-indigo-600">{tender.bidStartDate}</p>
                 </div>
+                )}
 
-                <div className="p-3 bg-[#FFF9F5] rounded-[12px] border border-[#FFF0E5]">
+                {tender.submissionDeadline && (
+                <div className="p-3 bg-orange-50 rounded-xl border border-orange-100">
                   <p className="text-[10px] font-bold text-gray-400 mb-1 flex items-center gap-1.5 uppercase tracking-wider">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
                     </svg>
                     BID END DATE
                   </p>
-                  <p className="text-[20px] font-bold text-[#F97316]">{tender.submissionDeadline}</p>
+                  <p className="text-[20px] font-bold text-orange-500">{tender.submissionDeadline}</p>
                 </div>
+                )}
               </div>
             </motion.div>
 
@@ -422,7 +432,7 @@ export function TenderDetails() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+              className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
             >
               {/* Accordion 1: Tender Summary */}
               <div className="border-b border-gray-100 last:border-0">
@@ -431,7 +441,7 @@ export function TenderDetails() {
                   className="w-full flex items-center justify-between p-6 bg-white hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex flex-col items-start gap-2">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F3E8FF] text-[#9333EA] text-[11px] font-semibold border border-[#E9D5FF]">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-600 text-[11px] font-semibold border border-purple-200">
                       <Sparkles className="w-3.5 h-3.5" />
                       AI Generated Summary
                     </span>
@@ -700,7 +710,7 @@ export function TenderDetails() {
               onClick={handleDownloadReport}
               className="w-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 font-semibold px-4 py-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-colors text-[14px]"
             >
-              <Download className="w-4 h-4 text-[#3B82F6]" />
+              <Download className="w-4 h-4 text-blue-600" />
               Download Tender Report
             </motion.button>
 
@@ -714,7 +724,7 @@ export function TenderDetails() {
               <p className="text-[11px] font-bold text-gray-400 mb-3 text-left uppercase tracking-wider">Bid Document Preparation</p>
               <button
                 onClick={() => navigate(`/bid-preparation/${tenderId}`)}
-                className="w-full bg-[#4F46E5] hover:bg-indigo-700 text-white font-semibold px-4 py-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all text-[14px] mb-2"
+                className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:bg-indigo-700 text-white font-semibold px-4 py-3 rounded-xl flex items-center justify-center gap-2 shadow-sm transition-all text-[14px] mb-2"
               >
                 <Sparkles className="w-4 h-4 text-indigo-200" />
                 Coming Soon! Check Demo Here

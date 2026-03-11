@@ -63,11 +63,11 @@ export function BidDocumentPreparation() {
     };
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC]">
+        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50">
             {/* Header */}
-            <div className="bg-white border-b border-gray-200 px-6 py-4">
+            <div className="bg-white border-b border-gray-200 px-4 sm:px-6 py-3 sm:py-4">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4">
                         <button
                             onClick={() => navigate(`/tender/${tenderId}`)}
                             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -75,10 +75,10 @@ export function BidDocumentPreparation() {
                             <ArrowLeft className="w-5 h-5 text-gray-500" />
                         </button>
                         <div>
-                            <h1 className="text-lg font-semibold text-[#4F46E5]">
+                            <h1 className="text-base sm:text-lg font-semibold text-indigo-600">
                                 Tender Details
                             </h1>
-                            <p className="text-xs text-gray-400 font-medium tracking-wide uppercase">
+                            <p className="text-[10px] sm:text-xs text-gray-400 font-medium tracking-wide uppercase">
                                 REFERENCE ID: TND-{tender.id}
                             </p>
                         </div>
@@ -87,8 +87,8 @@ export function BidDocumentPreparation() {
             </div>
 
             {/* Main Content */}
-            <div className="max-w-7xl mx-auto p-6 mt-4">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="max-w-7xl mx-auto p-4 sm:p-6 mt-2 sm:mt-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8">
 
                     {/* Left Column - Document Preparation */}
                     <div className="lg:col-span-2 space-y-6">
@@ -98,19 +98,19 @@ export function BidDocumentPreparation() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}
-                            className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-6 flex items-center gap-5"
+                            className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 flex items-start sm:items-center gap-3 sm:gap-5"
                         >
-                            <div className="w-16 h-16 bg-[#3B82F6] rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                                <Building2 className="w-8 h-8 text-white" />
+                            <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-xl sm:rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                                <Building2 className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                             </div>
-                            <div>
-                                <h2 className="text-[22px] font-bold text-gray-900 mb-1">{tender.title}</h2>
+                            <div className="min-w-0 flex-1">
+                                <h2 className="text-base sm:text-[22px] font-bold text-gray-900 mb-1 line-clamp-2">{tender.title}</h2>
                                 <div className="flex items-center gap-2">
-                                    <span className="p-1 bg-gray-100 rounded text-gray-500">
+                                    <span className="p-1 bg-gray-100 rounded text-gray-500 flex-shrink-0">
                                         {/* Placeholder for small paper icon */}
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
                                     </span>
-                                    <p className="text-sm font-medium text-gray-500">{tender.organization}</p>
+                                    <p className="text-xs sm:text-sm font-medium text-gray-500 truncate">{tender.organization}</p>
                                 </div>
                             </div>
                         </motion.div>
@@ -120,15 +120,15 @@ export function BidDocumentPreparation() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.1 }}
-                            className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-6 flex flex-col h-[700px]"
+                            className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 p-4 sm:p-6 flex flex-col min-h-[500px] sm:h-[700px]"
                         >
                             {/* List Header & Legend */}
-                            <div className="flex items-center justify-between mb-6 pb-2 border-b border-transparent">
-                                <h3 className="text-lg font-bold text-gray-900">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mb-4 sm:mb-6 pb-2 border-b border-transparent">
+                                <h3 className="text-base sm:text-lg font-bold text-gray-900">
                                     Required Documents <span className="text-gray-900">({documents.length})</span>
                                 </h3>
                                 <div className="flex items-center gap-6">
-                                    <label className="relative flex items-center gap-2 cursor-pointer mt-1">
+                                    <label className="relative flex items-center gap-2 cursor-pointer">
                                         <input
                                             type="checkbox"
                                             checked={allSelected}
@@ -138,19 +138,19 @@ export function BidDocumentPreparation() {
                                         {allSelected && (
                                             <svg className="absolute top-1 left-1 w-3 h-3 text-white pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                         )}
-                                        <span className="text-[13px] font-bold text-gray-900">Select All</span>
+                                        <span className="text-xs sm:text-[13px] font-bold text-gray-900">Select All</span>
                                     </label>
                                 </div>
                             </div>
 
                             {/* Scrollable Checklist */}
-                            <div className="flex-1 overflow-y-auto pr-4 space-y-3 custom-scrollbar">
+                            <div className="flex-1 overflow-y-auto sm:pr-4 space-y-3 custom-scrollbar">
                                 {documents.map((doc) => (
                                     <div
                                         key={doc.id}
-                                        className={`flex items-center justify-between p-4 bg-white rounded-[16px] border transition-colors ${doc.selected ? 'border-blue-500 shadow-sm' : 'border-gray-200 hover:border-blue-300'}`}
+                                        className={`flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-white rounded-xl border transition-colors gap-3 sm:gap-0 ${doc.selected ? 'border-blue-500 shadow-sm' : 'border-gray-200 hover:border-blue-300'}`}
                                     >
-                                        <div className="flex items-start gap-4 flex-1">
+                                        <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
                                             {/* 1. Checkbox on the Left */}
                                             <label className="relative cursor-pointer mt-1 shrink-0">
                                                 <input
@@ -165,30 +165,30 @@ export function BidDocumentPreparation() {
                                             </label>
 
                                             {/* 2. Document Info */}
-                                            <div>
-                                                <div className="flex items-center gap-3">
-                                                    <h4 className="text-[15px] font-bold text-gray-900">{doc.name}</h4>
-                                                    <span className="px-2.5 py-0.5 bg-gray-100 rounded text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                                                    <h4 className="text-sm sm:text-[15px] font-bold text-gray-900">{doc.name}</h4>
+                                                    <span className="px-2 sm:px-2.5 py-0.5 bg-gray-100 rounded text-[10px] sm:text-[11px] font-semibold text-gray-500 uppercase tracking-wider">
                                                         {doc.type}
                                                     </span>
                                                 </div>
-                                                <p className="text-[13px] text-gray-500 mt-1 line-clamp-1">Brief description about this required document...</p>
+                                                <p className="text-xs sm:text-[13px] text-gray-500 mt-1 line-clamp-1">Brief description about this required document...</p>
                                             </div>
                                         </div>
 
                                         {/* 3. Status and Actions on the Right */}
-                                        <div className="flex items-center gap-4 shrink-0 pl-4">
+                                        <div className="flex items-center gap-3 sm:gap-4 shrink-0 sm:pl-4 ml-8 sm:ml-0">
                                             {/* Text-based Status Badge */}
-                                            <div className={`px-3 py-1 rounded-full border text-[12px] font-bold flex items-center justify-center min-w-[80px] ${statusBadges[doc.status]}`}>
+                                            <div className={`px-2.5 sm:px-3 py-1 rounded-full border text-[11px] sm:text-[12px] font-bold flex items-center justify-center min-w-[70px] sm:min-w-[80px] ${statusBadges[doc.status]}`}>
                                                 {doc.status}
                                             </div>
 
                                             {/* Action Buttons */}
-                                            <div className="flex items-center gap-1 border-l border-gray-100 pl-4">
-                                                <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors tooltip-trigger" title="Edit template">
+                                            <div className="flex items-center gap-1 border-l border-gray-100 pl-3 sm:pl-4">
+                                                <button className="p-1.5 sm:p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors tooltip-trigger" title="Edit template">
                                                     <Edit className="w-4 h-4" />
                                                 </button>
-                                                <button className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors tooltip-trigger" title="Upload custom file">
+                                                <button className="p-1.5 sm:p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors tooltip-trigger" title="Upload custom file">
                                                     <CloudUpload className="w-4 h-4" />
                                                 </button>
                                             </div>
@@ -198,10 +198,10 @@ export function BidDocumentPreparation() {
                             </div>
 
                             {/* Footer Button */}
-                            <div className="pt-6 mt-2">
+                            <div className="pt-4 sm:pt-6 mt-2">
                                 <button
                                     onClick={() => navigate(`/tender/${tenderId}/generated-documents`)}
-                                    className="w-full py-4 rounded-[16px] border-2 border-blue-500 text-blue-500 font-bold text-[16px] hover:bg-blue-50 transition-colors"
+                                    className="w-full py-3 sm:py-4 rounded-xl border-2 border-blue-500 text-blue-500 font-bold text-sm sm:text-[16px] hover:bg-blue-50 transition-colors"
                                 >
                                     Coming Soon! Check Demo Here
                                 </button>
@@ -219,9 +219,9 @@ export function BidDocumentPreparation() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.1 }}
                             onClick={() => navigate("/saved-bids")}
-                            className="w-full bg-white hover:bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold px-6 py-4 rounded-[24px] flex items-center justify-center gap-3 shadow-sm transition-all hover:shadow-md text-[16px]"
+                            className="w-full bg-white hover:bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold px-4 sm:px-6 py-3 sm:py-4 rounded-xl sm:rounded-2xl flex items-center justify-center gap-2 sm:gap-3 shadow-sm transition-all hover:shadow-md text-sm sm:text-[16px]"
                         >
-                            <ClipboardList className="w-5 h-5 text-indigo-700" strokeWidth={2.5} />
+                            <ClipboardList className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-700" strokeWidth={2.5} />
                             Check all saved bids
                         </motion.button>
 

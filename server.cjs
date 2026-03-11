@@ -231,7 +231,7 @@ AUTHORITATIVE CONTEXT (if any):${contextStr}`;
 
     // SDK v0.24+: systemInstruction is a plain string passed to getGenerativeModel
     const chatModel = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash", // Use standard model name across environments
+      model: "gemini-2.0-flash", // Use standard model name across environments
       systemInstruction,
     });
 

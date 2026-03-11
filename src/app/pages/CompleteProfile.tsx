@@ -135,7 +135,7 @@ export function CompleteProfile() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Loading your document repository...</p>
@@ -145,7 +145,7 @@ export function CompleteProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50 flex flex-col">
       {/* Hidden file input */}
       <input
         type="file"
@@ -264,9 +264,6 @@ export function CompleteProfile() {
                         <span className="text-xs font-bold text-gray-700 whitespace-nowrap">
                           {cat.uploadedCount}/{cat.totalCount} Uploaded
                         </span>
-                      </div>
-                      <div className={`p-2 rounded-xl bg-gray-50 text-gray-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors`}>
-                        {isExpanded ? <ChevronDown className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
                       </div>
                     </div>
                   </div>

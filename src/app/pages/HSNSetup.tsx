@@ -23,8 +23,7 @@ export function HSNSetup() {
       }));
     }
     return [
-      { id: "1", hsnCode: "7326", productKeyword: "Steel Fasteners" },
-      { id: "2", hsnCode: "8481", productKeyword: "Industrial Valves" },
+      { id: "1", hsnCode: "", productKeyword: "" },
     ];
   });
 

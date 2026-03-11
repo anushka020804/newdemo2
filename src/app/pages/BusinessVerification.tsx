@@ -134,23 +134,11 @@ export function BusinessVerification() {
               })),
             );
           } else {
-            setHsnDetails([
-              {
-                hsnCode: "998313",
-                hsnDescription:
-                  "Information technology consulting and support services",
-              }, // Fallback matching official portal
-            ]);
+            setHsnDetails([]);
           }
         } catch (e) {
           console.error("Error fetching HSN from Advance API:", e);
-          setHsnDetails([
-            {
-              hsnCode: "998313",
-              hsnDescription:
-                "Information technology consulting and support services",
-            }, // Fallback matching official portal
-          ]);
+          setHsnDetails([]);
         }
       }
     } catch (e) {

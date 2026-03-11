@@ -55,3 +55,29 @@ export async function getCustomerProfile(): Promise<CustomerProfile> {
     const { data } = await axiosInstance.get('/profile/customer');
     return data;
 }
+
+export interface UpdateProfilePayload {
+    fullName?: string;
+    mobile?: string;
+    companyLegalName?: string;
+    companyAddress?: string;
+    establishmentYear?: string;
+}
+
+/** Update customer profile and company info */
+export async function updateCustomerProfile(payload: UpdateProfilePayload): Promise<CustomerProfile> {
+    const { data } = await axiosInstance.patch('/profile/customer', payload);
+    return data;
+}
+
+/** Append new HSN codes without deleting existing ones */
+export async function appendHsn(payload: SaveHsnSetupPayload) {
+    const { data } = await axiosInstance.post('/profile/hsn-append', payload);
+    return data;
+}
+
+/** Delete a single HSN row */
+export async function deleteHsn(hsnId: string) {
+    const { data } = await axiosInstance.delete(`/profile/hsn/${hsnId}`);
+    return data;
+}

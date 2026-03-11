@@ -38,7 +38,7 @@ export function FinalDocumentEditor() {
     };
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC]">
+        <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-blue-50">
             {/* Header */}
             <div className="bg-white border-b border-gray-200 px-6 py-4">
                 <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -50,7 +50,7 @@ export function FinalDocumentEditor() {
                             <ArrowLeft className="w-5 h-5 text-gray-500" />
                         </button>
                         <div>
-                            <h1 className="text-lg font-semibold text-[#4F46E5]">
+                            <h1 className="text-lg font-semibold text-indigo-600">
                                 Tender Details
                             </h1>
                             <p className="text-xs text-gray-400 font-medium tracking-wide uppercase">
@@ -73,9 +73,9 @@ export function FinalDocumentEditor() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5 }}
-                            className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-6 flex items-center gap-5"
+                            className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex items-center gap-5"
                         >
-                            <div className="w-16 h-16 bg-[#3B82F6] rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm">
+                            <div className="w-16 h-16 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm">
                                 <Building2 className="w-8 h-8 text-white" />
                             </div>
                             <div>
@@ -94,7 +94,7 @@ export function FinalDocumentEditor() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.1 }}
-                            className="bg-white rounded-[24px] shadow-sm border border-gray-100 flex flex-col overflow-hidden h-[700px]"
+                            className="bg-white rounded-2xl shadow-lg border border-gray-100 flex flex-col overflow-hidden h-[700px]"
                         >
                             <div className="bg-gray-50 border-b border-gray-100 p-4 text-center font-bold text-gray-800 text-[16px]">
                                 Document Editor
@@ -184,7 +184,7 @@ export function FinalDocumentEditor() {
                             {/* Actual Editor Canvas */}
                             <div className="flex-1 bg-gray-50/50 p-6 overflow-y-auto custom-scrollbar">
                                 <div
-                                    className="bg-white border border-gray-200 shadow-sm min-h-full rounded-lg p-8 focus:outline-none focus:ring-2 focus:ring-[#4F46E5]/20 focus:border-[#4F46E5] transition-shadow"
+                                    className="bg-white border border-gray-200 shadow-sm min-h-full rounded-lg p-8 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-shadow"
                                     contentEditable
                                     suppressContentEditableWarning
                                 >
@@ -204,13 +204,13 @@ export function FinalDocumentEditor() {
                             <div className="p-5 border-t border-gray-100 bg-white flex gap-4">
                                 <button
                                     onClick={() => navigate(`/tender/${tenderId}/generated-documents`)}
-                                    className="px-8 py-3 rounded-[16px] border border-gray-300 text-gray-700 font-bold text-[15px] hover:bg-gray-50 transition-colors w-1/2"
+                                    className="px-8 py-3 rounded-xl border border-gray-300 text-gray-700 font-bold text-[15px] hover:bg-gray-50 transition-colors w-1/2"
                                 >
                                     Back
                                 </button>
                                 <button
                                     onClick={() => navigate(`/tender/${tenderId}/final-bid-sequence`)}
-                                    className="px-8 py-3 rounded-[16px] bg-[#4F46E5] text-white font-bold text-[15px] hover:bg-[#4338ca] transition-colors shadow-sm w-1/2"
+                                    className="px-8 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold text-[15px] hover:from-indigo-700 hover:to-blue-700 transition-colors shadow-sm w-1/2"
                                 >
                                     Save
                                 </button>
@@ -227,7 +227,7 @@ export function FinalDocumentEditor() {
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.1 }}
                             onClick={() => navigate("/saved-bids")}
-                            className="w-full bg-white hover:bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold px-6 py-4 rounded-[24px] flex items-center justify-center gap-3 shadow-sm transition-all hover:shadow-md text-[16px]"
+                            className="w-full bg-white hover:bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold px-6 py-4 rounded-2xl flex items-center justify-center gap-3 shadow-sm transition-all hover:shadow-md text-[16px]"
                         >
                             <ClipboardList className="w-5 h-5 text-indigo-700" strokeWidth={2.5} />
                             Check all saved bids
@@ -238,10 +238,10 @@ export function FinalDocumentEditor() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
-                            className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden flex flex-col h-[670px]"
+                            className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col h-[670px]"
                         >
                             {/* Header */}
-                            <div className="bg-[#3B82F6] text-white p-4 font-bold text-center text-[16px]">
+                            <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-4 font-bold text-center text-[16px]">
                                 Opportunity X AI
                             </div>
 
@@ -249,7 +249,7 @@ export function FinalDocumentEditor() {
                             <div className="flex-1 p-5 bg-white overflow-y-auto">
                                 <div className="flex gap-3 mb-4">
                                     <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0 mt-1">
-                                        <Bot className="w-4 h-4 text-[#3B82F6]" />
+                                        <Bot className="w-4 h-4 text-blue-600" />
                                     </div>
                                     <div className="bg-white border text-[13px] border-gray-200 shadow-sm rounded-2xl rounded-tl-none p-4 text-gray-800">
                                         Hey! How can I help you?<br />
@@ -268,10 +268,10 @@ export function FinalDocumentEditor() {
                                             className="w-full border border-gray-200 rounded-full px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
                                         />
                                     </div>
-                                    <button className="p-2 text-gray-500 hover:text-[#3B82F6] transition-colors shrink-0">
+                                    <button className="p-2 text-gray-500 hover:text-blue-600 transition-colors shrink-0">
                                         <Send className="w-5 h-5" />
                                     </button>
-                                    <button className="p-2 text-gray-500 hover:text-[#3B82F6] transition-colors shrink-0">
+                                    <button className="p-2 text-gray-500 hover:text-blue-600 transition-colors shrink-0">
                                         <Paperclip className="w-5 h-5" />
                                     </button>
                                 </div>

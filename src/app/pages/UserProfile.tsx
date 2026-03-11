@@ -17,8 +17,10 @@ import {
   Download,
   Eye,
   Loader2,
+  Plus,
+  Trash2,
 } from "lucide-react";
-import { getCustomerProfile, CustomerProfile } from "../api/profile";
+import { getCustomerProfile, CustomerProfile, updateCustomerProfile, appendHsn, deleteHsn } from "../api/profile";
 import { getDocumentStatus, RepositoryStatus } from "../api/documents";
 
 export function UserProfile() {
@@ -26,6 +28,19 @@ export function UserProfile() {
   const [isLoading, setIsLoading] = useState(true);
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
   const [docStatus, setDocStatus] = useState<RepositoryStatus | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editForm, setEditForm] = useState({
+    fullName: "",
+    mobile: "",
+    companyLegalName: "",
+    companyAddress: "",
+    establishmentYear: "",
+  });
+  const [isEditingHsn, setIsEditingHsn] = useState(false);
+  const [newHsnCode, setNewHsnCode] = useState("");
+  const [newHsnKeywords, setNewHsnKeywords] = useState("");
+  const [hsnSaving, setHsnSaving] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,6 +66,60 @@ export function UserProfile() {
     };
     fetchData();
   }, []);
+
+  const startEditing = () => {
+    setEditForm({
+      fullName: profile?.fullName || "",
+      mobile: profile?.mobile || "",
+      companyLegalName: company?.legalName || "",
+      companyAddress: company?.address || "",
+      establishmentYear: company?.establishmentYear || "",
+    });
+    setIsEditing(true);
+  };
+
+  const cancelEditing = () => setIsEditing(false);
+
+  const saveProfile = async () => {
+    setIsSaving(true);
+    try {
+      const updated = await updateCustomerProfile(editForm);
+      setProfile(updated);
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Failed to update profile:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAddHsn = async () => {
+    if (!newHsnKeywords.trim()) return;
+    setHsnSaving(true);
+    try {
+      await appendHsn({
+        hsns: [{ hsnCode: newHsnCode.trim(), keywords: newHsnKeywords.split(',').map(k => k.trim()).filter(Boolean) }],
+      });
+      const updated = await getCustomerProfile();
+      setProfile(updated);
+      setNewHsnCode("");
+      setNewHsnKeywords("");
+    } catch (err) {
+      console.error("Failed to add HSN:", err);
+    } finally {
+      setHsnSaving(false);
+    }
+  };
+
+  const handleDeleteHsn = async (hsnId: string) => {
+    try {
+      await deleteHsn(hsnId);
+      const updated = await getCustomerProfile();
+      setProfile(updated);
+    } catch (err) {
+      console.error("Failed to delete HSN:", err);
+    }
+  };
 
   // Derived data
   const company = profile?.companies?.[0];
@@ -112,6 +181,33 @@ export function UserProfile() {
               Profile
             </h1>
           </div>
+          {!isEditing ? (
+            <button
+              onClick={startEditing}
+              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all text-sm font-medium"
+            >
+              <Edit2 className="w-4 h-4" />
+              Edit Profile
+            </button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={cancelEditing}
+                className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-all text-sm font-medium"
+              >
+                <X className="w-4 h-4" />
+                Cancel
+              </button>
+              <button
+                onClick={saveProfile}
+                disabled={isSaving}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl hover:from-indigo-700 hover:to-blue-700 transition-all text-sm font-medium disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 active:from-indigo-700 active:to-blue-700"
+              >
+                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                Save
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -139,9 +235,18 @@ export function UserProfile() {
                   <label className="text-[11px] uppercase tracking-wider text-gray-500 mb-1.5 block">
                     Company Name
                   </label>
-                  <p className="text-gray-900 font-medium">
-                    {company?.legalName || 'N/A'}
-                  </p>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editForm.companyLegalName}
+                      onChange={(e) => setEditForm(f => ({ ...f, companyLegalName: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  ) : (
+                    <p className="text-gray-900 font-medium">
+                      {company?.legalName || 'N/A'}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -168,19 +273,37 @@ export function UserProfile() {
                   <label className="text-[11px] uppercase tracking-wider text-gray-500 mb-1.5 block">
                     Establishment Year
                   </label>
-                  <p className="text-gray-900 font-medium">
-                    {company?.establishmentYear || 'N/A'}
-                  </p>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editForm.establishmentYear}
+                      onChange={(e) => setEditForm(f => ({ ...f, establishmentYear: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  ) : (
+                    <p className="text-gray-900 font-medium">
+                      {company?.establishmentYear || 'N/A'}
+                    </p>
+                  )}
                 </div>
 
                 <div className="md:col-span-2">
                   <label className="text-[11px] uppercase tracking-wider text-gray-500 mb-1.5 block flex items-center gap-1.5">
                     Address
                   </label>
-                  <p className="text-gray-900 flex items-start gap-2">
-                    <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                    {company?.address || 'N/A'}
-                  </p>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editForm.companyAddress}
+                      onChange={(e) => setEditForm(f => ({ ...f, companyAddress: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  ) : (
+                    <p className="text-gray-900 flex items-start gap-2">
+                      <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                      {company?.address || 'N/A'}
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -201,9 +324,18 @@ export function UserProfile() {
                   <label className="text-[11px] uppercase tracking-wider text-gray-500 mb-1.5 block">
                     Owner Name
                   </label>
-                  <p className="text-gray-900 font-medium">
-                    {profile?.fullName || 'N/A'}
-                  </p>
+                  {isEditing ? (
+                    <input
+                      type="text"
+                      value={editForm.fullName}
+                      onChange={(e) => setEditForm(f => ({ ...f, fullName: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                  ) : (
+                    <p className="text-gray-900 font-medium">
+                      {profile?.fullName || 'N/A'}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -220,10 +352,22 @@ export function UserProfile() {
                   <label className="text-[11px] uppercase tracking-wider text-gray-500 mb-1.5 block">
                     Mobile
                   </label>
-                  <p className="text-gray-900 flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-gray-400" />
-                    {profile?.mobile || 'N/A'}
-                  </p>
+                  {isEditing ? (
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                      <input
+                        type="text"
+                        value={editForm.mobile}
+                        onChange={(e) => setEditForm(f => ({ ...f, mobile: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                      />
+                    </div>
+                  ) : (
+                    <p className="text-gray-900 flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-gray-400" />
+                      {profile?.mobile || 'N/A'}
+                    </p>
+                  )}
                 </div>
               </div>
             </motion.div>
@@ -240,15 +384,15 @@ export function UserProfile() {
                   Product Categories (HSN)
                 </h2>
                 <button
-                  onClick={() => navigate("/hsn-setup")}
+                  onClick={() => setIsEditingHsn(!isEditingHsn)}
                   className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1"
                 >
-                  <Edit2 className="w-4 h-4" />
-                  Edit
+                  {isEditingHsn ? <X className="w-4 h-4" /> : <Edit2 className="w-4 h-4" />}
+                  {isEditingHsn ? 'Done' : 'Edit'}
                 </button>
               </div>
 
-              {uniqueHsns.length === 0 ? (
+              {uniqueHsns.length === 0 && !isEditingHsn ? (
                 <p className="text-gray-500 text-sm">No HSN codes configured yet. Click Edit to add your product categories.</p>
               ) : (
                 <div className="space-y-3">
@@ -257,12 +401,52 @@ export function UserProfile() {
                       key={hsn.id}
                       className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl border border-gray-100"
                     >
-                      <span className="inline-flex items-center justify-center px-3 py-1.5 bg-green-500 text-white text-sm font-semibold rounded-lg min-w-[56px] text-center">
-                        {hsn.hsnCode}
-                      </span>
-                      <span className="text-gray-900">{hsn.keywords?.join(', ') || 'No keywords'}</span>
+                      {hsn.hsnCode && (
+                        <span className="inline-flex items-center justify-center px-3 py-1.5 bg-green-500 text-white text-sm font-semibold rounded-lg min-w-[56px] text-center">
+                          {hsn.hsnCode}
+                        </span>
+                      )}
+                      <span className="text-gray-900 flex-1">{hsn.keywords?.join(', ') || 'No keywords'}</span>
+                      {isEditingHsn && (
+                        <button
+                          onClick={() => handleDeleteHsn(hsn.id)}
+                          className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   ))}
+                </div>
+              )}
+
+              {isEditingHsn && (
+                <div className="mt-4 p-4 border border-dashed border-indigo-200 rounded-xl bg-indigo-50/50">
+                  <p className="text-sm font-medium text-gray-700 mb-3">Add New HSN</p>
+                  <div className="flex gap-3">
+                    <input
+                      type="text"
+                      placeholder="HSN Code"
+                      value={newHsnCode}
+                      onChange={(e) => setNewHsnCode(e.target.value)}
+                      className="w-32 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Keywords (comma separated)"
+                      value={newHsnKeywords}
+                      onChange={(e) => setNewHsnKeywords(e.target.value)}
+                      className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                    />
+                    <button
+                      onClick={handleAddHsn}
+                      disabled={hsnSaving || !newHsnKeywords.trim()}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg text-sm font-medium hover:from-indigo-700 hover:to-blue-700 transition-all disabled:opacity-50 focus:outline-none"
+                    >
+                      {hsnSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                      Add
+                    </button>
+                  </div>
                 </div>
               )}
             </motion.div>
