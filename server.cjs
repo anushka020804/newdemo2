@@ -52,20 +52,55 @@ function getCache(key) {
 }
 app.post('/api/pan-to-gst', async (req, res) => {
   const { pan, consent } = req.body;
+  console.log('─── /api/pan-to-gst HIT ───');
+  console.log('Request body:', JSON.stringify({ pan, consent }));
+  console.log('VITE_API_URL:', process.env.VITE_API_URL || '*** MISSING ***');
+  console.log('VITE_API_TOKEN present:', !!process.env.VITE_API_TOKEN);
+  console.log('VITE_API_SECRET present:', !!process.env.VITE_API_SECRET);
   try {
+    const targetUrl = process.env.VITE_API_URL;
+    if (!targetUrl) {
+      console.error('ERROR: VITE_API_URL env var is not set!');
+      return res.status(500).json({ error: 'Server misconfiguration: VITE_API_URL not set' });
+    }
 
-    const apiRes = await fetch(process.env.VITE_API_URL, {
+    const headers = {
+      'Content-Type': 'application/json',
+      'token': process.env.VITE_API_TOKEN,
+      'secretkey': process.env.VITE_API_SECRET
+    };
+    const body = JSON.stringify({ pan, consent });
+
+    console.log('Fetching:', targetUrl);
+    console.log('Headers (keys):', Object.keys(headers));
+    console.log('Body:', body);
+
+    const apiRes = await fetch(targetUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'token': process.env.VITE_API_TOKEN,
-        'secretkey': process.env.VITE_API_SECRET
-      },
-      body: JSON.stringify({ pan, consent })
+      headers,
+      body
     });
-    const data = await apiRes.json();
+
+    console.log('Upstream status:', apiRes.status);
+    console.log('Upstream headers:', JSON.stringify([...apiRes.headers.entries()]));
+
+    const rawText = await apiRes.text();
+    console.log('Upstream raw response:', rawText);
+
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch (parseErr) {
+      console.error('Failed to parse upstream response as JSON:', parseErr.message);
+      return res.status(502).json({ error: 'Upstream returned non-JSON response', raw: rawText.slice(0, 500) });
+    }
+
+    console.log('Parsed response:', JSON.stringify(data));
+    console.log('─── /api/pan-to-gst END ───');
     res.status(apiRes.status).json(data);
   } catch (err) {
+    console.error('PAN-TO-GST FETCH ERROR:', err.message);
+    console.error('Stack:', err.stack);
     res.status(500).json({ error: 'Proxy error', details: err.message });
   }
 });

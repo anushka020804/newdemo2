@@ -37,7 +37,7 @@ export function HSNSetup() {
         productKeyword: hsn.hsnDescription || "",
       })));
     }
-  }, [location.state]);
+  }, [location.pathname, location.key]);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editHsn, setEditHsn] = useState("");

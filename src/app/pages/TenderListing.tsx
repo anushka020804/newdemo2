@@ -534,7 +534,7 @@ export function TenderListing() {
                 const statusConfig = getStatusConfig(tender.status);
                 return (
                   <motion.div
-                    key={tender.id}
+                    key={`${tender.id}-${index}`}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: Math.min(index * 0.05, 0.3) }}
@@ -640,7 +640,7 @@ export function TenderListing() {
                 const statusConfig = getStatusConfig(tender.status);
                 return (
                   <motion.div
-                    key={tender.id}
+                    key={`${tender.id}-${index}`}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.2, delay: Math.min(index * 0.05, 0.3) }}
