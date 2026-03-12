@@ -1,0 +1,19 @@
+@@ -282,18 +282,18 @@
+       matchPercentage: 40
+     },
+   ];
+ 
+   const getStatusConfig = (status: string) => {
+     switch (status) {
+       case "past-24hrs":
+         return { label: "New (24hrs)", bg: "bg-green-100", text: "text-green-700", border: "border-green-200" };
+       case "active":
+         return { label: "Active", bg: "bg-blue-100", text: "text-blue-700", border: "border-blue-200" };
+       case "closing-soon":
+         return { label: "Closing Soon", bg: "bg-amber-100", text: "text-amber-700", border: "border-amber-200" };
+       case "expired":
+         return { label: "Expired", bg: "bg-gray-100", text: "text-gray-700", border: "border-gray-200" };
+       default:
+         return { label: "Unknown", bg: "bg-gray-100", text: "text-gray-700", border: "border-gray-200" };
+ 
+ 
