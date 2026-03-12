@@ -82,22 +82,33 @@ export function ChatbotWidget() {
     setLoading(true);
 
     try {
-      // Build messages array for the server proxy
-      const apiMessages = [...messages, userMsg].map((m) => ({
-        role: m.role === "assistant" ? "assistant" : "user",
-        content: m.text,
+      const GEMINI_API_KEY = (import.meta as any).env.VITE_GEMINI_API_KEY;
+      const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`;
+
+      // Build history for Gemini API
+      const history = [...messages, userMsg];
+      const contents = history.map((m) => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.text }],
       }));
 
-      const res = await fetch("http://localhost:4000/api/chat", {
+      const res = await fetch(GEMINI_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: apiMessages }),
+        body: JSON.stringify({
+          system_instruction: {
+            parts: [{ text: "You are Opportunity X AI, an expert assistant for tenders, bids, and procurement on the GeM (Government e-Marketplace) portal in India. Keep responses concise (2-3 sentences max). Be professional and helpful." }],
+          },
+          contents,
+        }),
       });
 
       const data = await res.json();
-      const reply = data.answer || "Sorry, I couldn't generate a response.";
+      const reply =
+        data?.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "Sorry, I couldn't generate a response.";
       setMessages((prev) => [...prev, { role: "assistant", text: reply }]);
-    } catch (err: any) {
+    } catch {
       setMessages((prev) => [
         ...prev,
         { role: "assistant", text: "Sorry, something went wrong. Please try again." },

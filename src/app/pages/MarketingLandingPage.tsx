@@ -1902,7 +1902,7 @@ export function MarketingLandingPage() {
           </div>
         </div>
 
-        <style jsx>{`
+        <style>{`
           @keyframes mesh-gradient {
             0% {
               background-position: 0% 50%;

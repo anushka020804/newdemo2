@@ -4,14 +4,12 @@ import { motion } from "motion/react";
 import {
     ArrowLeft,
     Building2,
-    Bot,
-    Send,
-    Paperclip,
     FileArchive,
     Trash2,
     CheckCircle2,
     Download
 } from "lucide-react";
+import { InlineChatbot } from "../components/InlineChatbot";
 
 export function FinalDownloadSubmission() {
     const navigate = useNavigate();
@@ -194,44 +192,8 @@ export function FinalDownloadSubmission() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.5, delay: 0.2 }}
-                            className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex flex-col h-[400px] sm:h-[670px]"
                         >
-                            {/* Header */}
-                            <div className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-3 sm:p-4 font-bold text-center text-sm sm:text-[16px]">
-                                Opportunity X AI
-                            </div>
-
-                            {/* Chat Area */}
-                            <div className="flex-1 p-3 sm:p-5 bg-white overflow-y-auto">
-                                <div className="flex gap-2 sm:gap-3 mb-4">
-                                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0 mt-1">
-                                        <Bot className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
-                                    </div>
-                                    <div className="bg-white border text-xs sm:text-[13px] border-gray-200 shadow-sm rounded-2xl rounded-tl-none p-3 sm:p-4 text-gray-800">
-                                        Hey! How can I help you?<br />
-                                        Ask me anything related to this tender.
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Input Area */}
-                            <div className="p-3 sm:p-4 bg-white border-t border-gray-100">
-                                <div className="flex items-center gap-2 sm:gap-3">
-                                    <div className="flex-1 relative">
-                                        <input
-                                            type="text"
-                                            placeholder="Type a message..."
-                                            className="w-full border border-gray-200 rounded-full px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#3B82F6]"
-                                        />
-                                    </div>
-                                    <button className="p-1.5 sm:p-2 text-gray-500 hover:text-blue-600 transition-colors shrink-0">
-                                        <Send className="w-4 h-4 sm:w-5 sm:h-5" />
-                                    </button>
-                                    <button className="p-1.5 sm:p-2 text-gray-500 hover:text-blue-600 transition-colors shrink-0">
-                                        <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
-                                    </button>
-                                </div>
-                            </div>
+                            <InlineChatbot />
                         </motion.div>
 
                     </div>
